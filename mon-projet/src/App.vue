@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import Login_mod from './Login_mod.vue';
+import Login_mod from './components/Login_mod.vue';
 import FileUpload from './components/FileUpload.vue';
 
 export default {

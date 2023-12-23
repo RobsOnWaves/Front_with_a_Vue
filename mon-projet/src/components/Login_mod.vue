@@ -1,12 +1,19 @@
 <template>
   <div>
-    <!-- Affichez un message d'erreur si loginError n'est pas vide -->
-    <p v-if="loginError" class="error">{{ loginError }}</p>
+    <!-- Utiliser les alertes Bootstrap pour les messages d'erreur -->
+    <div v-if="loginError" class="alert alert-danger">
+      {{ loginError }}
+    </div>
 
     <form @submit.prevent="login_mod">
-      <input type="t  ext" v-model="username" placeholder="Nom d'utilisateur" required>
-      <input type="password" v-model="password" placeholder="Mot de passe" required>
-      <button type="submit">Connexion</button>
+      <!-- Champs de formulaire avec des styles Bootstrap -->
+      <div class="form-group">
+        <input type="text" class="form-control" v-model="username" placeholder="Nom d'utilisateur" required>
+      </div>
+      <div class="form-group">
+        <input type="password" class="form-control" v-model="password" placeholder="Mot de passe" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Connexion</button>
     </form>
   </div>
 </template>
@@ -30,7 +37,7 @@ export default {
       formData.append('password', this.password);
       formData.append('client_id', "");
       formData.append('client_secret', "");
-      axios.post('http://localhost:8002/token', formData)
+      axios.post(`${this.$apiUrl}/token`, formData)
     .then(response => {
       const token = response.data.access_token;
       console.log('Token:', token);
