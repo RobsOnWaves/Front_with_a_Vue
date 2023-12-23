@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+
+  front_with_a_vue:
+    image: front_with_a_vue:latest_local
+    restart: always
+    ports:
+      - "8080:80"
+ 
