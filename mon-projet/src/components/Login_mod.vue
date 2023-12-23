@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="login-container">
     <!-- Utiliser les alertes Bootstrap pour les messages d'erreur -->
     <div v-if="loginError" class="alert alert-danger">
       {{ loginError }}
     </div>
 
-    <form @submit.prevent="login_mod">
-      <!-- Champs de formulaire avec des styles Bootstrap -->
+    <form @submit.prevent="login_mod" class="login-form">
+      <!-- Champs de formulaire avec des styles Bootstrap et personnalisés -->
       <div class="form-group">
         <input type="text" class="form-control" v-model="username" placeholder="Nom d'utilisateur" required>
       </div>
@@ -56,7 +56,38 @@ export default {
 </script>
 
 <style scoped>
+.login-container {
+  background-color: rgba(0, 0, 0, 0.8); /* Fond sombre semi-transparent */
+  border-radius: 10px;
+  padding: 20px;
+  width: fit-content;
+  margin: auto;
+}
+
+.login-form .form-group {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  background-color: rgba(255, 255, 255, 0.7); /* Fond clair semi-transparent pour les champs */
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.7);
+}
+
+/* Ajouter un style pour les messages d'erreur */
 .error {
-  color: red;
+  color: #dc3545; /* Utilisez une couleur rouge pour les erreurs */
+  text-shadow: 0 0 3px #000;
 }
 </style>
+
