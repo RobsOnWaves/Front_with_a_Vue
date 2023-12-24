@@ -7,4 +7,8 @@ services:
     restart: always
     ports:
       - "8080:80"
- 
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.frontpreprod.rule=Host('frontpreprod.exsilicium.robsonwaves.rocks`)"
+        - "traefik.http.routers.frontpreprod.entrypoints=websecure"
+        - "traefik.http.services.frontpreprod.loadbalancer.server.port=80" 
