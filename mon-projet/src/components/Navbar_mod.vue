@@ -4,7 +4,7 @@
       <a class="navbar-brand" href="#">ROBSONWAVES</a>
       <!-- Autres contenus de la barre de navigation -->
       <!-- Le bouton de déconnexion appelle la méthode logout lorsqu'il est cliqué -->
-      <span v-if="isLoggedIn" class="navbar-username"> Bienvenue {{ userName }}</span>   
+      <span v-if="isLoggedIn" class="navbar-username"> Bienvenue, {{ userName }}</span>   
       <button v-if="isLoggedIn" @click="logout" class="btn btn-danger logout-button">
     <i class="bi bi-box-arrow-right"></i> Déconnexion
   </button>
