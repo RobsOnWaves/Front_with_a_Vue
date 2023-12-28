@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" />
+    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
     <div v-if="!isLoggedIn" class="container main-content">
       <Login_mod @login-success="handleLogin" @login-error="handleLoginError" />
     </div>
@@ -24,13 +24,15 @@ export default {
   data() {
     return {
       isLoggedIn: false,
-      token: ''
+      token: '',
+      userName: ''
     };
   },
   methods: {
-    handleLogin(token) {
+    handleLogin(token, userName) {
       this.isLoggedIn = true;
       this.token = token;
+      this.userName = userName;
     },
     handleLoginError() {
       this.isLoggedIn = false;

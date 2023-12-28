@@ -41,9 +41,11 @@ export default {
       axios.post(`${this.$apiUrl}/token`, formData)
     .then(response => {
       const token = response.data.access_token;
+      const userName = response.data.name;
       console.log('Token:', token);
       localStorage.setItem('token', token);
-      this.$emit('login-success', token);
+      localStorage.setItem('name', userName);
+      this.$emit('login-success', token, userName);
     })
       .catch(error => {
   console.error('Error:', error);
