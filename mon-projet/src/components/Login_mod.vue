@@ -1,6 +1,5 @@
 <template>
-  <div class="login-container">
-    <!-- Utiliser les alertes Bootstrap pour les messages d'erreur -->
+  <div class="login-container d-flex flex-column justify-content-center align-items-center">    <!-- Utiliser les alertes Bootstrap pour les messages d'erreur -->
     <div v-if="loginError" class="alert alert-danger">
       {{ loginError }}
     </div>
@@ -13,7 +12,9 @@
       <div class="form-group">
         <input type="password" class="form-control" v-model="password" placeholder="Mot de passe" required>
       </div>
-      <button type="submit" class="btn btn-primary">Connexion</button>
+      <div class="mt-auto w-100 text-center">
+        <button type="submit" class="btn btn-primary">Connexion</button>
+      </div>
     </form>
   </div>
 </template>
@@ -40,9 +41,11 @@ export default {
       axios.post(`${this.$apiUrl}/token`, formData)
     .then(response => {
       const token = response.data.access_token;
+      const userName = response.data.name;
       console.log('Token:', token);
       localStorage.setItem('token', token);
-      this.$emit('login-success', token);
+      localStorage.setItem('name', userName);
+      this.$emit('login-success', token, userName);
     })
       .catch(error => {
   console.error('Error:', error);
@@ -62,10 +65,16 @@ export default {
   padding: 20px;
   width: fit-content;
   margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%; /* Assurez-vous que le conteneur a une hauteur définie */
+
 }
 
 .login-form .form-group {
   margin-bottom: 15px;
+  height: 100%; /* Assurez-vous que le formulaire remplit le conteneur */
 }
 
 .form-control {

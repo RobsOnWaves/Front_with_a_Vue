@@ -1,9 +1,11 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar />
-    <div class="container main-content">
-      <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
-      <FileUpload v-else :token="token" />
+    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
+    <div v-if="!isLoggedIn" class="container main-content">
+      <Login_mod @login-success="handleLogin" @login-error="handleLoginError" />
+    </div>
+    <div v-else class="container main-content">
+      <FileUpload :token="token" />
     </div>
   </div>
 </template>
@@ -22,23 +24,29 @@ export default {
   data() {
     return {
       isLoggedIn: false,
-      token: ''
+      token: '',
+      userName: ''
     };
   },
   methods: {
-    handleLogin(token) {
+    handleLogin(token, userName) {
       this.isLoggedIn = true;
       this.token = token;
+      this.userName = userName;
     },
     handleLoginError() {
       this.isLoggedIn = false;
-      // Vous pouvez également réinitialiser le token ou afficher un message d'erreur ici si vous le souhaitez
       this.token = '';
-      // Optionnel: afficher un message d'erreur ou ouvrir un dialogue/modal d'erreur
+    },
+    handleLogout() {
+      this.isLoggedIn = false;
+      this.token = '';
+      // Ici, vous pouvez également effectuer d'autres actions nécessaires après la déconnexion
     }
   }
 };
 </script>
+
 <style>
 
 html, body {
