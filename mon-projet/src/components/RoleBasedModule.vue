@@ -1,7 +1,9 @@
 <template>
   <div class="role-based-module">
-    <div v-if="userRole === 'admin' || userRole === 'gold_digger'" class="button-container">
-      <button @click="goToFileUpload" class="upload-button">Go to File Upload</button>
+    <div v-if="userRole === 'admin' || userRole === 'gold_digger'" class="image-button-container">
+      <div class="image-button" @click="goToFileUpload">
+        <span class="button-text">Diggin' it !</span>
+      </div>
     </div>
     <div v-else class="message-container">
       No apps for you
@@ -31,35 +33,57 @@ export default {
   margin-top: 20px;
 }
 
-.button-container, .message-container {
-  margin: 10px 0;
+.image-button-container {
+  display: flex;
+  justify-content: center;
 }
 
-.upload-button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.image-button {
+  background-image: url('../../images/gold_digger.png'); /* Chemin de votre image */
+  background-size: contain; /* Ou 'cover' si vous voulez que l'image couvre toute la div */
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 200px; /* ou la largeur de votre choix */
+  height: 200px; /* ou la hauteur de votre choix */
+  position: relative;
   cursor: pointer;
-  font-size: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: transparent;
 }
 
-.upload-button:hover {
-  background-color: #45a049;
+.image-button .button-text {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  background-color: rgba(0, 0, 0, 0);
+  font-size: 16px;
+  transition: color 0.3s ease, backdrop-filter 0.3s ease;
+  backdrop-filter: blur(0px);
+  border-radius: 4px;
+}
+
+.image-button:hover .button-text {
+  color: white;
+  backdrop-filter: blur(4px);
 }
 
 .message-container {
-  color: white; /* Couleur du texte */
-  background-color: rgba(0, 0, 0, 0.5); /* Arrière-plan semi-transparent */
-  padding: 10px; /* Espacement autour du texte */
-  border-radius: 5px; /* Bordures arrondies pour le fond */
-  text-shadow: 2px 2px 4px #000000; /* Ombre portée pour le texte */
-  font-size: 1.5rem; /* Taille de la police */
-  letter-spacing: 0.1rem; /* Espacement des lettres */
-  width: fit-content; /* S'adapte au contenu */
-  margin: auto; /* Centrer dans le conteneur */
-  margin-top: 20px; /* Ajustez l'espacement en haut si nécessaire */
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 5px;
+  text-shadow: 2px 2px 4px #000000;
+  font-size: 1.5rem;
+  letter-spacing: 0.1rem;
+  width: fit-content;
+  margin: auto;
+  margin-top: 20px;
 }
-
 </style>
