@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar />
+    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
     <div class="container main-content">
       <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
       <RoleBasedModule v-if="isLoggedIn && !showFileUpload" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent" />
@@ -26,6 +26,7 @@ export default {
     return {
       isLoggedIn: false,
       token: '',
+      userName: '',
       userRole: '',
       showFileUpload: false
     };
@@ -48,7 +49,12 @@ export default {
       this.userRole = '';
       // Optionnel: afficher un message d'erreur ou ouvrir un dialogue/modal d'erreur
     },
-    
+    handleLogout() {
+      this.isLoggedIn = false;
+      this.token = '';
+      // Ici, vous pouvez également effectuer d'autres actions nécessaires après la déconnexion
+    },
+
     showFileUploadComponent() {
       this.showFileUpload = true; // Mettre à jour showFileUpload pour afficher le composant FileUpload
     }
