@@ -5,8 +5,8 @@
         <span class="button-text">Diggin' it !</span>
       </div>
     </div>
-    <div v-else class="message-container">
-      No apps for you
+    <div v-else class="image-container">
+      <div class="overlay-text">No apps for you</div>
     </div>
   </div>
 </template>
@@ -29,8 +29,10 @@ export default {
 
 <style scoped>
 .role-based-module {
-  text-align: center;
-  margin-top: 20px;
+  display: flex;
+  justify-content: center; /* Centrer horizontalement les enfants */
+  align-items: flex-start; /* Centrer verticalement les enfants */
+  height: 100vh; 
 }
 
 .image-button-container {
@@ -85,5 +87,40 @@ export default {
   width: fit-content;
   margin: auto;
   margin-top: 20px;
+}
+
+.image-container {
+  background-image: url('../../images/noapp.png'); /* Chemin de votre image pour 'No apps for you' */
+  width: 200px; /* Largeur de l'image */
+  height: 200px; /* Hauteur de l'image */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 20px; /* Espace au-dessus du conteneur */
+  background-size: cover; /* Assurez-vous que l'image couvre le conteneur */
+  background-position: center; /* Centrez l'image de fond */
+}
+
+.overlay-text {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  opacity: 0; /* Le texte est complètement transparent par défaut */
+  transition: opacity 0.3s ease; /* Transition pour l'opacité */
+  z-index: 2; /* Assurez-vous que le texte est au-dessus de l'image de fond */
+}
+
+.image-container:hover .overlay-text {
+  opacity: 1; /* Le texte devient visible au survol */
 }
 </style>
