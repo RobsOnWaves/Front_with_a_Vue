@@ -1,11 +1,10 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
-    <div v-if="!isLoggedIn" class="container main-content">
-      <Login_mod @login-success="handleLogin" @login-error="handleLoginError" />
-    </div>
-    <div v-else class="container main-content">
-      <FileUpload :token="token" />
+    <Navbar />
+    <div class="container main-content">
+      <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
+      <RoleBasedModule v-if="isLoggedIn && !showFileUpload" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent" />
+      <FileUpload v-if="showFileUpload" />
     </div>
   </div>
 </template>
@@ -14,39 +13,48 @@
 import Navbar from './components/Navbar_mod.vue';
 import Login_mod from './components/Login_mod.vue';
 import FileUpload from './components/FileUpload.vue';
+import RoleBasedModule from './components/RoleBasedModule.vue';
 
 export default {
   components: {
     Navbar,
     Login_mod,
-    FileUpload
+    FileUpload,
+    RoleBasedModule
   },
   data() {
     return {
       isLoggedIn: false,
       token: '',
-      userName: ''
+      userRole: '',
+      showFileUpload: false
     };
   },
   methods: {
-    handleLogin(token, userName) {
+    
+    handleLogin(token, userName, userRole) {
       this.isLoggedIn = true;
       this.token = token;
       this.userName = userName;
+      this.userRole = userRole;
+      console.log('role', userRole)
     },
+
     handleLoginError() {
       this.isLoggedIn = false;
+      // Vous pouvez également réinitialiser le token ou afficher un message d'erreur ici si vous le souhaitez
       this.token = '';
+      this.userName = '';
+      this.userRole = '';
+      // Optionnel: afficher un message d'erreur ou ouvrir un dialogue/modal d'erreur
     },
-    handleLogout() {
-      this.isLoggedIn = false;
-      this.token = '';
-      // Ici, vous pouvez également effectuer d'autres actions nécessaires après la déconnexion
+    
+    showFileUploadComponent() {
+      this.showFileUpload = true; // Mettre à jour showFileUpload pour afficher le composant FileUpload
     }
   }
 };
 </script>
-
 <style>
 
 html, body {
