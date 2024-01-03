@@ -5,7 +5,7 @@
         <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
           <span class="button-text">Diggin' it !</span>
         </div>
-        <div class="sub-text" @click="goToFileUpload">Sous-texte pour le premier bouton</div>
+        <div class="sub-text" @click="goToFileUpload"> pour le premier bouton</div>
       </div>
     </div>
     <div v-if="userRole === 'admin' || userRole === 'gold_digger'">
@@ -161,6 +161,7 @@ export default {
   text-align: center; /* Centrer le texte */
   color: white; /* Couleur du sous-texte */
   margin-top: 5px; 
+  cursor: pointer;
 }
 
 
