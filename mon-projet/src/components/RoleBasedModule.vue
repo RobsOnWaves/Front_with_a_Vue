@@ -5,14 +5,15 @@
         <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
           <span class="button-text">Diggin' it !</span>
         </div>
-        <div class="sub-text">Sous-texte pour le premier bouton</div>
+        <div class="sub-text" @click="goToFileUpload">Sous-texte pour le premier bouton</div>
       </div>
-
+    </div>
+    <div v-if="userRole === 'admin' || userRole === 'gold_digger'">
       <div class="image-button-container">
         <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
           <span class="button-text">Still Diggin' it !</span>
         </div>
-        <div class="sub-text">Sous-texte pour le second bouton</div>
+        <div class="sub-text" @click="goToFileUpload">Sous-texte pour le second bouton</div>
       </div>
     </div>
     <div v-else class="image-container">
@@ -57,8 +58,10 @@ export default {
   width: fit-content;
   margin: auto;
   display: flex; /* Définir le conteneur comme Flexbox */
-  align-items: flex-start; /* Aligner les éléments enfants au début de l'axe transversal */
-  justify-content: center; 
+  flex-direction: row;
+  align-items:flex-start; /* Aligner les éléments enfants au début de l'axe transversal */
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -67,6 +70,7 @@ export default {
   flex-direction: column; /* Organise les enfants en colonne */
   align-items: center; /* Centre les enfants horizontalement */
   margin-bottom: 10px; 
+  width: auto;
 }
 
 .image-button {
