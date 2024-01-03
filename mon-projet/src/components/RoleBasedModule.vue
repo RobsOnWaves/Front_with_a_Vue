@@ -1,8 +1,18 @@
 <template>
   <div class="role-based-module">
-    <div v-if="userRole === 'admin' || userRole === 'gold_digger'" class="image-button-container">
-      <div class="image-button" @click="goToFileUpload">
-        <span class="button-text">Diggin' it !</span>
+    <div v-if="userRole === 'admin' || userRole === 'gold_digger'">
+      <div class="image-button-container">
+        <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
+          <span class="button-text">Diggin' it !</span>
+        </div>
+        <div class="sub-text">Sous-texte pour le premier bouton</div>
+      </div>
+
+      <div class="image-button-container">
+        <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
+          <span class="button-text">Still Diggin' it !</span>
+        </div>
+        <div class="sub-text">Sous-texte pour le second bouton</div>
       </div>
     </div>
     <div v-else class="image-container">
@@ -11,8 +21,19 @@
   </div>
 </template>
 
+
+
 <script>
+
+
+
 export default {
+  data() {
+    return {
+      goldDiggerImage: require('../../images/gold_digger.png'),
+      noAppImage: require('../../images/noapp.png'),
+    };
+  },
   props: {
     userRole: String
   },
@@ -28,20 +49,27 @@ export default {
 </script>
 
 <style scoped>
+
 .role-based-module {
-  display: flex;
-  justify-content: center; /* Centrer horizontalement les enfants */
-  align-items: flex-start; /* Centrer verticalement les enfants */
-  height: 100vh; 
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 10px;
+  padding: 20px;
+  width: fit-content;
+  margin: auto;
+  display: flex; /* Définir le conteneur comme Flexbox */
+  align-items: flex-start; /* Aligner les éléments enfants au début de l'axe transversal */
+  justify-content: center; 
+  gap: 10px;
 }
 
 .image-button-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* Organise les enfants en colonne */
+  align-items: center; /* Centre les enfants horizontalement */
+  margin-bottom: 10px; 
 }
 
 .image-button {
-  background-image: url('../../images/gold_digger.png'); /* Chemin de votre image */
   background-size: contain; /* Ou 'cover' si vous voulez que l'image couvre toute la div */
   background-position: center;
   background-repeat: no-repeat;
@@ -123,4 +151,13 @@ export default {
 .image-container:hover .overlay-text {
   opacity: 1; /* Le texte devient visible au survol */
 }
+
+.sub-text {
+  width: 100%; /* Assurez-vous que la largeur du sous-texte correspond à celle du bouton */
+  text-align: center; /* Centrer le texte */
+  color: white; /* Couleur du sous-texte */
+  margin-top: 5px; 
+}
+
+
 </style>
