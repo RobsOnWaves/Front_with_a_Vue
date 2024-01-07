@@ -8,12 +8,12 @@
         <div class="sub-text" @click="goToFileUpload"> pour le premier bouton</div>
       </div>
     </div>
-    <div v-if="userRole === 'admin' || userRole === 'gold_digger'">
+    <div v-if="userRole === 'admin' || userRole === 'meps'">
       <div class="image-button-container">
-        <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
-          <span class="button-text">Still Diggin' it !</span>
+        <div class="image-button" @click="goToAdmin" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
+          <span class="button-text">Admin</span>
         </div>
-        <div class="sub-text" @click="goToFileUpload">Sous-texte pour le second bouton</div>
+        <div class="sub-text" @click="goToAdmin">Sous-texte pour le second bouton</div>
       </div>
     </div>
     <div v-else class="image-container">
@@ -41,6 +41,9 @@ export default {
   methods: {
     goToFileUpload() {
       this.$emit('navigate-to-fileupload');
+    },
+    goToAdmin() {
+      this.$emit('navigate-to-admin');
     }
   },
   mounted() {

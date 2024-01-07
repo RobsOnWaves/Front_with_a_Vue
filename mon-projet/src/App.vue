@@ -3,8 +3,9 @@
     <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
     <div class="container main-content">
       <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
-      <RoleBasedModule v-if="isLoggedIn && !showFileUpload" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent" />
+      <RoleBasedModule v-if="isLoggedIn && !showFileUpload" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent"/>
       <FileUpload v-if="showFileUpload" />
+      <Admin v-if="showAdmin" />
     </div>
   </div>
 </template>
@@ -14,13 +15,15 @@ import Navbar from './components/Navbar_mod.vue';
 import Login_mod from './components/Login_mod.vue';
 import FileUpload from './components/FileUpload.vue';
 import RoleBasedModule from './components/RoleBasedModule.vue';
+import Admin from './components/Admin_mod.vue';
 
 export default {
   components: {
     Navbar,
     Login_mod,
     FileUpload,
-    RoleBasedModule
+    RoleBasedModule,
+    Admin
   },
   data() {
     return {
@@ -28,7 +31,8 @@ export default {
       token: '',
       userName: '',
       userRole: '',
-      showFileUpload: false
+      showFileUpload: false,
+      showAdmin: false
     };
   },
   methods: {
@@ -57,6 +61,9 @@ export default {
 
     showFileUploadComponent() {
       this.showFileUpload = true; // Mettre à jour showFileUpload pour afficher le composant FileUpload
+    },
+    showAdminComponent() {
+      this.showAdmin = true; // Mettre à jour showFileUpload pour afficher le composant FileUpload
     }
   }
 };
