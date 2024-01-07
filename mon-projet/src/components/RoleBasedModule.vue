@@ -1,5 +1,8 @@
 <template>
   <div class="role-based-module">
+    <div v-if="userRole === 'user'" class="image-container">
+      <div class="overlay-text">No apps for you</div>
+    </div>
     <div v-if="userRole === 'admin' || userRole === 'gold_digger'">
       <div class="image-button-container">
         <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
@@ -10,7 +13,7 @@
     </div>
     <div v-if="userRole === 'admin'">
       <div class="image-button-container">
-        <div class="image-button" @click="goToAdmin" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
+        <div class="image-button" @click="goToAdmin" :style="{ backgroundImage: 'url(' + adminImage + ')' }">
           <span class="button-text">Admin</span>
         </div>
         <div class="sub-text" @click="goToAdmin">Interface d'administration </div>
@@ -18,15 +21,13 @@
     </div>
     <div v-if="userRole === 'admin' || userRole === 'meps'">
       <div class="image-button-container">
-        <div class="image-button" @click="goToDemocracy" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
-          <span class="button-text">Democratie</span>
+        <div class="image-button" @click="goToDemocracy" :style="{ backgroundImage: 'url(' + democracyImage + ')' }">
+          <span class="button-text">Démocratie</span>
         </div>
-        <div class="sub-text" @click="goToDemocracy"> Données de d'intérêt démocratique </div>
+        <div class="sub-text" @click="goToDemocracy"> Données d'intérêt démocratique </div>
       </div>
     </div>
-    <div v-else class="image-container">
-      <div class="overlay-text">No apps for you</div>
-    </div>
+
   </div>
 </template>
 
@@ -40,6 +41,8 @@ export default {
   data() {
     return {
       goldDiggerImage: require('../../images/gold_digger.png'),
+      adminImage: require('../../images/admin.png'),
+      democracyImage: require('../../images/democracy.png'),
       noAppImage: require('../../images/noapp.png'),
     };
   },

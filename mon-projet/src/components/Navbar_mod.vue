@@ -2,30 +2,20 @@
   <nav class="navbar">
     <div class="container">
       <a class="navbar-brand" href="#">ROBSONWAVES</a>
-      <!-- Autres contenus de la barre de navigation -->
-      <!-- Le bouton de déconnexion appelle la méthode logout lorsqu'il est cliqué -->
-      <span v-if="isLoggedIn" class="navbar-username">
-        Bienvenue, {{ userName }}</span
-      >
-      <button
-        v-if="isLoggedIn"
-        @click="backtolist"
-        class="btn btn-warning logout-button"
-      >
-        <i class="bi bi-box-arrow-right"></i> Retour aux applications
-      </button>
-      <button
-        v-if="isLoggedIn"
-        @click="logout"
-        class="btn btn-danger logout-button"
-      >
-        <i class="bi bi-box-arrow-right"></i> Déconnexion
-      </button>
-
+      <!-- Regroupez le nom d'utilisateur et les boutons dans un conteneur -->
+      <div class="controls-container" v-if="isLoggedIn">
+        <span class="navbar-username">Bienvenue, {{ userName }}</span>
+        <button @click="backtolist" class="btn btn-warning logout-button">
+          <i class="bi bi-box-arrow-right"></i> Retour aux applications
+        </button>
+        <button @click="logout" class="btn btn-danger logout-button">
+          <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </button>
+      </div>
     </div>
   </nav>
 </template>
-  
+
 <script>
 export default {
   props: {
@@ -69,6 +59,7 @@ export default {
   font-size: 1rem; /* Taille de la police ajustée */
   margin-right: 1rem; /* Espace à droite */
   font-weight: bold; /* Rendre le texte en gras */
+  margin-right: 0.5rem;
 }
 
 /* Si votre .navbar utilise Flexbox */
@@ -84,5 +75,12 @@ export default {
   align-items: center;
 }
 /* Additional styling */
+
+.controls-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Espacement entre les éléments */
+}
+
 </style>
   
