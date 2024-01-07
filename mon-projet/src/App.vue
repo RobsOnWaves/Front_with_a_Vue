@@ -3,9 +3,9 @@
     <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
     <div class="container main-content">
       <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
-      <RoleBasedModule v-if="isLoggedIn && !showFileUpload" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent"/>
-      <FileUpload v-if="showFileUpload" />
-      <Admin v-if="showAdmin" />
+      <RoleBasedModule v-if="isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent"/>
+      <FileUpload v-if="showApp == 'file-upload'" />
+      <Admin v-if="showApp == 'admin-page'" />
     </div>
   </div>
 </template>
@@ -31,8 +31,7 @@ export default {
       token: '',
       userName: '',
       userRole: '',
-      showFileUpload: false,
-      showAdmin: false
+      showApp: ''
     };
   },
   methods: {
@@ -60,10 +59,10 @@ export default {
     },
 
     showFileUploadComponent() {
-      this.showFileUpload = true; // Mettre à jour showFileUpload pour afficher le composant FileUpload
+      this.showApp = 'file-upload'; // Mettre à jour showFileUpload pour afficher le composant FileUpload
     },
     showAdminComponent() {
-      this.showAdmin = true; // Mettre à jour showFileUpload pour afficher le composant FileUpload
+      this.showApp = 'admin-page'; // Mettre à jour showFileUpload pour afficher le composant FileUpload
     }
   }
 };

@@ -10,9 +10,13 @@
       <button class="btn btn-success" @click="submitFile">Upload</button>
 
       <!-- Afficher la réponse JSON ici -->
-      <div v-if="responseContent">
+      <div v-if="responseContent" class="response-container">
         <h3>Réponse du serveur:</h3>
-        <pre>{{ responseContent }}</pre>
+        <ul>
+      <li v-for="(value, key) in responseContent" :key="key">
+         {{ value }}
+      </li>
+    </ul>
       </div>
     </div>
   </div>
@@ -125,4 +129,16 @@ export default {
   0% { transform: translate(-50%, -50%) rotate(0deg); }
   100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
+
+.response-container {
+  background-color: rgba(255, 255, 255, 0.8); /* Fond clair avec une légère transparence */
+  border: 1px solid #ddd; /* Bordure subtile */
+  border-radius: 5px; /* Coins arrondis */
+  padding: 10px; /* Espacement interne */
+  margin-top: 10px; /* Marge au-dessus du container */
+  color: #333; /* Couleur de texte foncée pour un contraste élevé */
+  font-size: 0.9rem; /* Taille de la police ajustée */
+  overflow-x: auto; /* Permettre le défilement horizontal si nécessaire */
+}
+
 </style>
