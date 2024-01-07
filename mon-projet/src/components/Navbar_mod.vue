@@ -4,10 +4,24 @@
       <a class="navbar-brand" href="#">ROBSONWAVES</a>
       <!-- Autres contenus de la barre de navigation -->
       <!-- Le bouton de déconnexion appelle la méthode logout lorsqu'il est cliqué -->
-      <span v-if="isLoggedIn" class="navbar-username"> Bienvenue, {{ userName }}</span>   
-      <button v-if="isLoggedIn" @click="logout" class="btn btn-danger logout-button">
-    <i class="bi bi-box-arrow-right"></i> Déconnexion
-  </button>
+      <span v-if="isLoggedIn" class="navbar-username">
+        Bienvenue, {{ userName }}</span
+      >
+      <button
+        v-if="isLoggedIn"
+        @click="backtolist"
+        class="btn btn-warning logout-button"
+      >
+        <i class="bi bi-box-arrow-right"></i> Retour aux applications
+      </button>
+      <button
+        v-if="isLoggedIn"
+        @click="logout"
+        class="btn btn-danger logout-button"
+      >
+        <i class="bi bi-box-arrow-right"></i> Déconnexion
+      </button>
+
     </div>
   </nav>
 </template>
@@ -16,31 +30,36 @@
 export default {
   props: {
     isLoggedIn: Boolean,
-    userName: String
+    userName: String,
   },
   methods: {
     logout() {
-      localStorage.removeItem('token');
-      this.$emit('logout');
+      console.log("logout dans navbar")
+      localStorage.removeItem("token");
+      this.$emit("logout");
+    },
+    backtolist() {
+      console.log("backtolist dans navbar")
+      this.$emit("backtolist");
     }
-  }
+  },
 };
 </script>
 
   
   <style scoped>
-  .navbar {
-    background-color: #0d1117;
-    border-bottom: 2px solid #58a6ff;
-    padding: 1rem 0;
-  }
-  .navbar-brand {
-    font-family: 'Orbitron', sans-serif;
-    color: #58a6ff;
-    font-size: 1.5rem;
-  }
+.navbar {
+  background-color: #0d1117;
+  border-bottom: 2px solid #58a6ff;
+  padding: 1rem 0;
+}
+.navbar-brand {
+  font-family: "Orbitron", sans-serif;
+  color: #58a6ff;
+  font-size: 1.5rem;
+}
 
-  .logout-button {
+.logout-button {
   margin-left: auto; /* Pour aligner à droite dans la barre de navigation */
   color: white; /* Couleur du texte */
 }
@@ -64,6 +83,6 @@ export default {
   display: flex;
   align-items: center;
 }
-  /* Additional styling */
-  </style>
+/* Additional styling */
+</style>
   

@@ -5,15 +5,23 @@
         <div class="image-button" @click="goToFileUpload" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
           <span class="button-text">Diggin' it !</span>
         </div>
-        <div class="sub-text" @click="goToFileUpload"> pour le premier bouton</div>
+        <div class="sub-text" @click="goToFileUpload"> Traitement des fichiers de ventes d'or </div>
       </div>
     </div>
-    <div v-if="userRole === 'admin' || userRole === 'meps'">
+    <div v-if="userRole === 'admin'">
       <div class="image-button-container">
         <div class="image-button" @click="goToAdmin" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
           <span class="button-text">Admin</span>
         </div>
-        <div class="sub-text" @click="goToAdmin">Sous-texte pour le second bouton</div>
+        <div class="sub-text" @click="goToAdmin">Interface d'administration </div>
+      </div>
+    </div>
+    <div v-if="userRole === 'admin' || userRole === 'meps'">
+      <div class="image-button-container">
+        <div class="image-button" @click="goToDemocracy" :style="{ backgroundImage: 'url(' + goldDiggerImage + ')' }">
+          <span class="button-text">Democratie</span>
+        </div>
+        <div class="sub-text" @click="goToDemocracy"> Données de d'intérêt démocratique </div>
       </div>
     </div>
     <div v-else class="image-container">
@@ -44,7 +52,10 @@ export default {
     },
     goToAdmin() {
       this.$emit('navigate-to-admin');
-    }
+    },
+    goToDemocracy() {
+      this.$emit('navigate-to-democracy');
+    },
   },
   mounted() {
     console.log("UserRole:", this.userRole);

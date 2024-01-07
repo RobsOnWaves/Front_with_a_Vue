@@ -1,11 +1,12 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
+    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName" @backtolist="showAllApps"/>
     <div class="container main-content">
       <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
-      <RoleBasedModule v-if="isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent"/>
+      <RoleBasedModule v-if="isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent" @navigate-to-democracy="showDemocracyComponent" />
       <FileUpload v-if="showApp == 'file-upload'" />
       <Admin v-if="showApp == 'admin-page'" />
+      <Democracy v-if="showApp == 'democracy-page' "/>
     </div>
   </div>
 </template>
@@ -16,6 +17,7 @@ import Login_mod from './components/Login_mod.vue';
 import FileUpload from './components/FileUpload.vue';
 import RoleBasedModule from './components/RoleBasedModule.vue';
 import Admin from './components/Admin_mod.vue';
+import Democracy from './components/Democracy_mod.vue';
 
 export default {
   components: {
@@ -23,7 +25,8 @@ export default {
     Login_mod,
     FileUpload,
     RoleBasedModule,
-    Admin
+    Admin,
+    Democracy
   },
   data() {
     return {
@@ -53,16 +56,26 @@ export default {
       // Optionnel: afficher un message d'erreur ou ouvrir un dialogue/modal d'erreur
     },
     handleLogout() {
-      this.isLoggedIn = false;
-      this.token = '';
+      this.isLoggedIn = false,
+      this.token = '',
+      this.userName = '',
+      this.userRole = '',
+      this.showApp = ''
       // Ici, vous pouvez également effectuer d'autres actions nécessaires après la déconnexion
     },
 
     showFileUploadComponent() {
-      this.showApp = 'file-upload'; // Mettre à jour showFileUpload pour afficher le composant FileUpload
+      this.showApp = 'file-upload'; 
     },
     showAdminComponent() {
-      this.showApp = 'admin-page'; // Mettre à jour showFileUpload pour afficher le composant FileUpload
+      this.showApp = 'admin-page';
+    },
+    showDemocracyComponent() {
+      this.showApp = 'democracy-page';
+    },
+    showAllApps() {
+      console.log("backtolist dans show")
+      this.showApp = '';
     }
   }
 };
