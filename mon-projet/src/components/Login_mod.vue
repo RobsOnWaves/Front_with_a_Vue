@@ -42,10 +42,13 @@ export default {
     .then(response => {
       const token = response.data.access_token;
       const userName = response.data.name;
+      const userRole = response.data.role;
       console.log('Token:', token);
+      console.log('role:', userRole);
       localStorage.setItem('token', token);
       localStorage.setItem('name', userName);
-      this.$emit('login-success', token, userName);
+      localStorage.setItem('role', userRole);
+      this.$emit('login-success', token, userName, userRole);
     })
       .catch(error => {
   console.error('Error:', error);

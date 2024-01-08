@@ -1,11 +1,12 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName"/>
-    <div v-if="!isLoggedIn" class="container main-content">
-      <Login_mod @login-success="handleLogin" @login-error="handleLoginError" />
-    </div>
-    <div v-else class="container main-content">
-      <FileUpload :token="token" />
+    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName" @backtolist="showAllApps"/>
+    <div class="container main-content">
+      <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
+      <RoleBasedModule v-if="isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent" @navigate-to-democracy="showDemocracyComponent" />
+      <FileUpload v-if="showApp == 'file-upload'" />
+      <Admin v-if="showApp == 'admin-page'" />
+      <Democracy v-if="showApp == 'democracy-page' "/>
     </div>
   </div>
 </template>
@@ -14,39 +15,71 @@
 import Navbar from './components/Navbar_mod.vue';
 import Login_mod from './components/Login_mod.vue';
 import FileUpload from './components/FileUpload.vue';
+import RoleBasedModule from './components/RoleBasedModule.vue';
+import Admin from './components/Admin_mod.vue';
+import Democracy from './components/Democracy_mod.vue';
 
 export default {
   components: {
     Navbar,
     Login_mod,
-    FileUpload
+    FileUpload,
+    RoleBasedModule,
+    Admin,
+    Democracy
   },
   data() {
     return {
       isLoggedIn: false,
       token: '',
-      userName: ''
+      userName: '',
+      userRole: '',
+      showApp: ''
     };
   },
   methods: {
-    handleLogin(token, userName) {
+    
+    handleLogin(token, userName, userRole) {
       this.isLoggedIn = true;
       this.token = token;
       this.userName = userName;
+      this.userRole = userRole;
+      console.log('role', userRole)
     },
+
     handleLoginError() {
       this.isLoggedIn = false;
+      // Vous pouvez également réinitialiser le token ou afficher un message d'erreur ici si vous le souhaitez
       this.token = '';
+      this.userName = '';
+      this.userRole = '';
+      // Optionnel: afficher un message d'erreur ou ouvrir un dialogue/modal d'erreur
     },
     handleLogout() {
-      this.isLoggedIn = false;
-      this.token = '';
+      this.isLoggedIn = false,
+      this.token = '',
+      this.userName = '',
+      this.userRole = '',
+      this.showApp = ''
       // Ici, vous pouvez également effectuer d'autres actions nécessaires après la déconnexion
+    },
+
+    showFileUploadComponent() {
+      this.showApp = 'file-upload'; 
+    },
+    showAdminComponent() {
+      this.showApp = 'admin-page';
+    },
+    showDemocracyComponent() {
+      this.showApp = 'democracy-page';
+    },
+    showAllApps() {
+      console.log("backtolist dans show")
+      this.showApp = '';
     }
   }
 };
 </script>
-
 <style>
 
 html, body {
