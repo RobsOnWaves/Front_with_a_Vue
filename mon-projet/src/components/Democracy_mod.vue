@@ -7,6 +7,16 @@
           <span class="button-text">Rencontres MEPs/lobbies</span>
         </div>
         <div class="sub-text" @click="getFile"> Récupérer le fichier de rencontres MEP avec lobbies </div>
+        <div class="search-container">
+      <div v-for="(options, key) in apiResponse" :key="key">
+        <label :for="key">{{ key }}</label>
+        <input type="text" :id="key" v-model="selectedValues[key]" @input="filterOptions(key)">
+        <select :id="key" v-model="selectedValues[key]">
+          <option v-for="option in filteredOptions[key]" :key="option" :value="option">{{ option }}</option>
+        </select>
+      </div>
+      <button @click="sendRequest">Send Request</button>
+    </div>
       </div>
     </div>
   </div>
@@ -20,6 +30,11 @@ export default {
     return {
       isLoading: false, // Ajoutez cette propriété pour gérer l'affichage du spinner
       mepLobbies: require('../../images/MEP_files.png'),
+      apiResponse: null,
+      selectedValues: {},
+      filteredOptions: {},
+      searchQuery: {},
+
     };
   },
   methods: {
@@ -55,7 +70,108 @@ export default {
       } finally {
         this.isLoading = false; // Arrêt du chargement après la requête
       }
+    },
+    filterOptions(key) {
+      console.log(key)
+      const query = this.searchQuery[key].toLowerCase();
+      this.filteredOptions[key] = this.apiResponse[key].filter(option =>
+        option.toLowerCase().includes(query)
+      );
+    },
+    async fetchApiData() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${this.$apiUrl}/meps_file_fields_values`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        this.apiResponse = await response.json();
+        this.initializeSelectedValues();
+        this.initializeFilteredOptions();
+        console.log(this.apiResponse);
+        // You can handle the JSON response here as needed
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+      }
+    },
+    async sendRequest() {
+      const token = localStorage.getItem('token');
+      const fieldMap = {
+    'MEP Name': 'mep_name',
+    'MEP nationalPoliticalGroup': 'national_political_group',
+    'MEP politicalGroup': 'political_group',
+    'Title': 'title',
+    'Place': 'place',
+    'Meeting With': 'meeting_with'
+  };
+  const queryParams = new URLSearchParams();
+
+  // Construction des paramètres de requête à partir des valeurs sélectionnées
+  for (const [key, value] of Object.entries(this.selectedValues)) {
+    const apiField = fieldMap[key];
+    if (value && apiField) {
+      queryParams.append(apiField, value);
     }
+  }
+
+  try {
+    const response = await fetch(`${this.$apiUrl}/meps_file?` + queryParams.toString(), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    // Traiter la réponse en tant que Blob si c'est un fichier
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Créer un élément de lien pour le téléchargement
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'downloaded_file'; // Nom du fichier à télécharger
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  } catch (error) {
+    console.error('There has been a problem with your fetch operation:', error);
+  }
+  },
+  initializeSelectedValues() {
+    // Vérifiez si apiResponse est un objet non nul avant d'itérer
+    if (this.apiResponse && typeof this.apiResponse === 'object') {
+      Object.keys(this.apiResponse).forEach(key => {
+        this.selectedValues[key] = null;
+      });
+    } else {
+      console.error('apiResponse is null or not an object');
+    }
+  },
+  initializeFilteredOptions() {
+  this.filteredOptions = {};
+  Object.keys(this.apiResponse).forEach(key => {
+    this.filteredOptions[key] = []; // Ou une valeur par défaut appropriée
+  });
+},
+  },
+  async mounted() {
+    await this.fetchApiData();
+    this.initializeSelectedValues();
+
+    for (const key in this.apiResponse) {
+      this.searchQuery[key] = '';
+      this.filteredOptions[key] = this.apiResponse[key]; // Initialize with all options
+    } 
   }
 };
 </script>
