@@ -3,7 +3,7 @@
     <div class="container">
       <a class="navbar-brand" href="#">ROBSONWAVES</a>
       <!-- Regroupez le nom d'utilisateur et les boutons dans un conteneur -->
-      <div class="controls-container" v-if="isLoggedIn">
+      <div class="controls-container" v-if="store.isLoggedIn">
         <span class="navbar-username">Bienvenue, {{ userName }}</span>
         <button @click="backtolist" class="btn btn-warning logout-button">
           <i class="bi bi-box-arrow-right"></i> Retour aux applications
@@ -17,9 +17,14 @@
 </template>
 
 <script>
+import { store } from '../store';
+
+
 export default {
+  setup() {
+    return { store };
+  },
   props: {
-    isLoggedIn: Boolean,
     userName: String,
   },
   methods: {

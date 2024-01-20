@@ -1,12 +1,12 @@
 <template>
   <div id="app" class="app-background">
-    <Navbar @logout="handleLogout" :is-logged-in="isLoggedIn" :userName="userName" @backtolist="showAllApps"/>
+    <Navbar @logout="handleLogout" :is-logged-in="store.isLoggedIn" :userName="userName" @backtolist="showAllApps"/>
     <div class="container main-content">
-      <Login_mod v-if="!isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
-      <RoleBasedModule v-if="isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent" @navigate-to-democracy="showDemocracyComponent" />
-      <FileUpload v-if="showApp == 'file-upload'" />
-      <Admin v-if="showApp == 'admin-page'" />
-      <Democracy v-if="showApp == 'democracy-page' "/>
+      <Login_mod v-if="!store.isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
+      <RoleBasedModule v-if="store.isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent" @navigate-to-democracy="showDemocracyComponent" />
+      <FileUpload v-if="store.isLoggedIn && showApp == 'file-upload'" />
+      <Admin v-if="store.isLoggedIn && showApp == 'admin-page'" />
+      <Democracy v-if="store.isLoggedIn && showApp == 'democracy-page' "/>
     </div>
   </div>
 </template>
@@ -18,8 +18,12 @@ import FileUpload from './components/FileUpload.vue';
 import RoleBasedModule from './components/RoleBasedModule.vue';
 import Admin from './components/Admin_mod.vue';
 import Democracy from './components/Democracy_mod.vue';
+import { store } from './store';
 
 export default {
+  setup() {
+    return { store };
+  },
   components: {
     Navbar,
     Login_mod,
@@ -30,7 +34,6 @@ export default {
   },
   data() {
     return {
-      isLoggedIn: false,
       token: '',
       userName: '',
       userRole: '',
@@ -40,7 +43,7 @@ export default {
   methods: {
     
     handleLogin(token, userName, userRole) {
-      this.isLoggedIn = true;
+      store.isLoggedIn = true;
       this.token = token;
       this.userName = userName;
       this.userRole = userRole;
@@ -48,7 +51,7 @@ export default {
     },
 
     handleLoginError() {
-      this.isLoggedIn = false;
+      store.isLoggedIn = false;
       // Vous pouvez également réinitialiser le token ou afficher un message d'erreur ici si vous le souhaitez
       this.token = '';
       this.userName = '';
@@ -56,7 +59,7 @@ export default {
       // Optionnel: afficher un message d'erreur ou ouvrir un dialogue/modal d'erreur
     },
     handleLogout() {
-      this.isLoggedIn = false,
+      store.isLoggedIn = false,
       this.token = '',
       this.userName = '',
       this.userRole = '',

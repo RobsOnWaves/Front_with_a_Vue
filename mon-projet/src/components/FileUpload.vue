@@ -18,9 +18,13 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axiosInstance from '../axiosConfig';
+import { store } from '../store';
 
 export default {
+  setup() {
+    return { store };
+  },
   data() {
     return {
       selectedFile: null,
@@ -57,7 +61,7 @@ export default {
 
       try {
         const url = `${this.$apiUrl}/gold_file_converter?price_per_kg=${encodeURIComponent(this.pricePerkg)}`;
-        const response = await axios.post(url, formData, {
+        const response = await axiosInstance.post(url, formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           },

@@ -1,31 +1,106 @@
 <template>
   <div class="role-based-module">
     <div v-if="isLoading" class="loader"></div>
-    <div v-else>      
+    <div v-else>
       <div class="image-button-container">
-        <div class="image-button" @click="getFile" :style="{ backgroundImage: 'url(' + mepLobbies + ')' }">
+        <div
+          class="image-button"
+          @click="getFile"
+          :style="{ backgroundImage: 'url(' + mepLobbies + ')' }"
+        >
           <span class="button-text">Rencontres MEPs/lobbies</span>
         </div>
-        <div class="sub-text" @click="getFile"> Récupérer le fichier de rencontres MEP avec lobbies </div>
+        <div class="sub-text" @click="getFile">
+          Récupérer le fichier de toutes les rencontres enregistrées MEP avec lobbies
+        </div>
+
+        <div class="request-section">
+          <h2 class="filter-title">Filtres de Recherche</h2>
+
+          <div class="image-button-container">
+            <div v-for="(options, key) in apiResponse" :key="key">
+              <label :for="key" class="sub-text">{{ key }}</label>
+              <input
+                v-if="
+                  [
+                    'Title',
+                    'Meeting With',
+                    'Meeting Related to Procedure',
+                  ].includes(key)
+                "
+                type="text"
+                v-model="selectedValues[key]"
+                class="form-control"
+                :id="key"
+              />
+
+              <v-select
+                v-else
+                :options="filteredOptions[key]"
+                :reduce="(option) => option"
+                label="name"
+                taggable
+                @search="(searchEvent) => filterOptions(key, searchEvent)"
+                v-model="selectedValues[key]"
+              ></v-select>
+            </div>
+            <div>
+              <label class="sub-text">Début de la plage de recherche</label>
+              <input
+                type="date"
+                v-model="startDate"
+                class="form-control"
+                placeholder="Date de début"
+              />
+            </div>
+            <div>
+              <label class="sub-text">Fin de la plage de recherche</label>
+              <input
+                type="date"
+                v-model="endDate"
+                class="form-control"
+                placeholder="Date de fin"
+              />
+            </div>
+            <button class="btn btn-success" @click="sendRequest">
+              Appliquer les filtres et récupérer le fichier
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import axiosInstance from "../axiosConfig";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
+import { store } from "../store";
 
 export default {
+  setup() {
+    return { store };
+  },
+  components: {
+    "v-select": vSelect,
+  },
   data() {
     return {
       isLoading: false, // Ajoutez cette propriété pour gérer l'affichage du spinner
-      mepLobbies: require('../../images/MEP_files.png'),
+      mepLobbies: require("../../images/MEP_files.png"),
+      apiResponse: null,
+      selectedValues: {},
+      filteredOptions: {},
+      searchQuery: {},
+      startDate: null,
+      endDate: null,
     };
   },
   methods: {
     async getFile() {
       this.isLoading = true; // Début du chargement
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         console.error("Aucun jeton d'authentification trouvé");
         this.isLoading = false; // Arrêt du chargement en cas d'erreur
@@ -34,33 +109,199 @@ export default {
 
       try {
         const url = `${this.$apiUrl}/meps_file`;
-        const response = await axios.get(url, {
+        const response = await axiosInstance.get(url, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
-          responseType: 'blob',
+          responseType: "blob",
         });
 
         const fileURL = window.URL.createObjectURL(new Blob([response.data]));
-        const fileLink = document.createElement('a');
+        const fileLink = document.createElement("a");
         fileLink.href = fileURL;
-        fileLink.setAttribute('download', 'fichier_resultat.xlsx');
+        fileLink.setAttribute("download", "fichier_resultat.xlsx");
         document.body.appendChild(fileLink);
-        
+
         fileLink.click();
         fileLink.remove();
       } catch (error) {
         console.error("Erreur lors de l'envoi du fichier :", error);
-        this.loginError = error.response.data.detail || "Une erreur est survenue";
+        this.loginError =
+          error.response.data.detail || "Une erreur est survenue";
       } finally {
         this.isLoading = false; // Arrêt du chargement après la requête
       }
+    },
+    filterOptions(key, searchEvent = "") {
+      const query = searchEvent.toLowerCase();
+      this.filteredOptions[key] = this.apiResponse[key].filter((option) =>
+        option.toLowerCase().includes(query)
+      );
+    },
+    async fetchApiData() {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch(
+          `${this.$apiUrl}/meps_file_fields_values`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        this.apiResponse = await response.json();
+        this.initializeSelectedValues();
+        this.initializeFilteredOptions();
+        console.log(this.apiResponse);
+        // You can handle the JSON response here as needed
+      } catch (error) {
+        console.error(
+          "There has been a problem with your fetch operation:",
+          error
+        );
+      }
+    },
+    async sendRequest() {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      this.isLoading = true; // Début du chargement
+
+      for (const [key, value] of Object.entries(this.selectedValues)) {
+        const apiField = store.fieldMap[key];
+        if (value && apiField) {
+          queryParams.append(apiField, value);
+        }
+      }
+
+      if (this.startDate) {
+        // Convertit la date en format ISO si this.startDate est un objet Date
+        const formattedStartDate = new Date(this.startDate).toISOString();
+        queryParams.append("start_date", formattedStartDate);
+      }
+      if (this.endDate) {
+        // Convertit la date en format ISO si this.endDate est un objet Date
+        const formattedEndDate = new Date(this.endDate).toISOString();
+        queryParams.append("end_date", formattedEndDate);
+      }
+
+      try {
+        const response = await axiosInstance.get(`${this.$apiUrl}/meps_file`, {
+          params: queryParams,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob", // Si vous attendez une réponse de type blob
+        });
+
+        // Traiter la réponse en tant que Blob si c'est un fichier
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const fileLink = document.createElement("a");
+        fileLink.href = url;
+        fileLink.setAttribute("download", "downloaded_file.xlsx"); // Nom du fichier à télécharger
+        document.body.appendChild(fileLink);
+
+        fileLink.click();
+        window.URL.revokeObjectURL(url);
+        fileLink.remove();
+      } catch (error) {
+        console.error("Erreur lors de la requête :", error);
+        // Gestion supplémentaire des erreurs si nécessaire
+      }
+      this.isLoading = false; // Début du chargement
+    },
+    initializeSelectedValues() {
+      if (this.apiResponse && typeof this.apiResponse === "object") {
+        Object.keys(this.apiResponse).forEach((key) => {
+          if (store.fieldMap[key]) {
+            this.selectedValues[key] = null;
+          }
+        });
+      } else {
+        console.error("apiResponse is null or not an object");
+      }
+    },
+    initializeFilteredOptions() {
+      this.filteredOptions = {};
+      Object.keys(this.apiResponse).forEach((key) => {
+        if (store.fieldMap[key]) {
+          this.filteredOptions[key] = []; // Ou une valeur par défaut appropriée
+        }
+      });
+    },
+  },
+  async mounted() {
+    await this.fetchApiData();
+
+    this.searchQuery = {};
+    for (const key in this.apiResponse) {
+      this.searchQuery[key] = "";
+      this.filterOptions(key); // Filtrez les options initiales
     }
-  }
+  },
 };
 </script>
-
+@import 'vue-select/dist/vue-select.css';
 <style scoped>
+
+.filter-title {
+  text-align: center; /* Centrer le titre */
+  color: #fff; /* Couleur du texte du titre */
+  margin-bottom: 15px; /* Espace sous le titre */
+  padding: 10px; /* Espace intérieur pour le titre */
+  background-color: #6c757d; /* Couleur de fond pour le titre */
+  border-radius: 5px; /* Bords arrondis pour le titre */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Ombre pour le titre */
+  text-transform: uppercase; /* Texte en majuscules */
+  font-size: 1.2rem; /* Taille de la police */
+}
+
+
+.request-section {
+  background-color: rgba(114, 114, 114, 0.9); /* Un arrière-plan légèrement différent */
+  border: 1px solid #717171; /* Une bordure subtile */
+  padding: 20px; /* Un peu d'espace à l'intérieur */
+  margin-top: 20px; /* Espace au-dessus de la section */
+  border-radius: 10px; /* Bords arrondis */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet de profondeur */
+}
+
+
+.error-message {
+  color: #dc3545; /* Rouge pour les erreurs */
+  background-color: rgba(220, 53, 69, 0.7);
+  text-shadow: 0 0 3px #000;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.success-message {
+  color: #28a745; /* Vert pour les succès */
+  background-color: rgba(40, 167, 69, 0.7);
+  text-shadow: 0 0 3px #000;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.form-control,
+.v-select {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.form-group,
+.search-container,
+.image-button-container,
+.btn-success,
+.form-control {
+  margin-bottom: 10px; /* Espace uniforme entre les éléments */
+}
+
 .upload-container {
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 10px;
@@ -110,10 +351,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
-
 
 .role-based-module {
   background-color: rgba(0, 0, 0, 0.8);
@@ -123,18 +367,18 @@ export default {
   margin: auto;
   display: flex; /* Définir le conteneur comme Flexbox */
   flex-direction: row;
-  align-items:flex-start; /* Aligner les éléments enfants au début de l'axe transversal */
+  align-items: flex-start; /* Aligner les éléments enfants au début de l'axe transversal */
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  position: relative; 
+  position: relative;
 }
 
 .image-button-container {
   display: flex;
   flex-direction: column; /* Organise les enfants en colonne */
   align-items: center; /* Centre les enfants horizontalement */
-  margin-bottom: 10px; 
+  margin-bottom: 10px;
   width: auto;
 }
 
@@ -187,7 +431,7 @@ export default {
 }
 
 .image-container {
-  background-image: url('../../images/noapp.png'); /* Chemin de votre image pour 'No apps for you' */
+  background-image: url("../../images/noapp.png"); /* Chemin de votre image pour 'No apps for you' */
   width: 200px; /* Largeur de l'image */
   height: 200px; /* Hauteur de l'image */
   display: flex;
@@ -225,8 +469,40 @@ export default {
   width: 100%; /* Assurez-vous que la largeur du sous-texte correspond à celle du bouton */
   text-align: center; /* Centrer le texte */
   color: white; /* Couleur du sous-texte */
-  margin-top: 5px; 
+  margin-top: 5px;
   cursor: pointer;
 }
 
+.search-container {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.9
+  ); /* Fond blanc légèrement transparent */
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre portée légère */
+  margin-bottom: 20px; /* Espace en dessous du conteneur */
+}
+
+.v-select {
+  border: 1px solid #ccc; /* Bordure pour v-select */
+  border-radius: 4px; /* Arrondir les coins */
+  padding: 5px; /* Espace intérieur */
+  margin-bottom: 10px; /* Espace entre les composants v-select */
+}
+
+.v-select .vs__dropdown-toggle {
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.v-select .vs__selected-options {
+  padding-left: 10px; /* Espace à gauche des options sélectionnées */
+}
+
+.v-select .vs__actions {
+  padding-right: 10px; /* Espace à droite des boutons d'action */
+}
 </style>

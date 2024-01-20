@@ -24,9 +24,13 @@
 
 
 <script>
-import axios from 'axios';
+import axiosInstance from '../axiosConfig';
+import { store } from '../store';
 
 export default {
+  setup() {
+    return { store };
+  },
   data() {
     return {
       selectedFile: null,
@@ -57,7 +61,7 @@ export default {
 
       try {
         const url = `${this.$apiUrl}/meps_file`;
-        const response = await axios.post(url, formData, {
+        const response = await axiosInstance.post(url, formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           },
