@@ -7,7 +7,6 @@
       <FileUpload v-if="store.isLoggedIn && showApp == 'file-upload'" />
       <Admin v-if="store.isLoggedIn && showApp == 'admin-page'" />
       <Democracy v-if="store.isLoggedIn && showApp == 'democracy-page' "/>
-      <ErrorMessage v-if="store.errorMessage.visible"/>
     </div>
   </div>
 </template>
@@ -19,7 +18,6 @@ import FileUpload from './components/FileUpload.vue';
 import RoleBasedModule from './components/RoleBasedModule.vue';
 import Admin from './components/Admin_mod.vue';
 import Democracy from './components/Democracy_mod.vue';
-import ErrorMessage from './components/ErrorMessage.vue'
 import { store } from './store';
 
 export default {
@@ -32,8 +30,7 @@ export default {
     FileUpload,
     RoleBasedModule,
     Admin,
-    Democracy,
-    ErrorMessage
+    Democracy
   },
   data() {
     return {

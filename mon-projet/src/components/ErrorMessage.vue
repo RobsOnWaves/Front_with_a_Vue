@@ -24,13 +24,15 @@ export default {
   
   <style>
   .error-message {
-    position: fixed;
+    position: relative;
     top: 10px;
+    display: flex;
     left: 50%;
+    margin-bottom: 15px;
     transform: translateX(-50%);
     background-color: red;
     color: white;
-    padding: 10px;
+    padding: 20px;
     border-radius: 5px;
     z-index: 1000;
   }
