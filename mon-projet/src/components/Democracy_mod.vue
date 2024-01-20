@@ -141,18 +141,11 @@ export default {
     },
     async sendRequest() {
       const token = localStorage.getItem("token");
-      const fieldMap = {
-        "MEP Name": "mep_name",
-        "MEP nationalPoliticalGroup": "national_political_group",
-        "MEP politicalGroup": "political_group",
-        Title: "title",
-        "Meeting With": "meeting_with",
-        "Meeting Related to Procedure": "meeting_related_to_procedure",
-      };
       const queryParams = new URLSearchParams();
+      this.isLoading = true; // Début du chargement
 
       for (const [key, value] of Object.entries(this.selectedValues)) {
-        const apiField = fieldMap[key];
+        const apiField = store.fieldMap[key];
         if (value && apiField) {
           queryParams.append(apiField, value);
         }
@@ -181,19 +174,13 @@ export default {
         console.error("Erreur lors de la requête :", error);
         // Gestion supplémentaire des erreurs si nécessaire
       }
+      this.isLoading = false; // Début du chargement
+
     },
     initializeSelectedValues() {
-      const fieldMap = {
-        "MEP Name": "mep_name",
-        "MEP nationalPoliticalGroup": "national_political_group",
-        "MEP politicalGroup": "political_group",
-        Title: "title",
-        "Meeting With": "meeting_with",
-        "Meeting Related to Procedure": "meeting_related_to_procedure",
-      };
       if (this.apiResponse && typeof this.apiResponse === "object") {
         Object.keys(this.apiResponse).forEach((key) => {
-          if (fieldMap[key]) {
+          if (store.fieldMap[key]) {
             this.selectedValues[key] = null;
           }
         });
@@ -202,17 +189,10 @@ export default {
       }
     },
     initializeFilteredOptions() {
-      const fieldMap = {
-        "MEP Name": "mep_name",
-        "MEP nationalPoliticalGroup": "national_political_group",
-        "MEP politicalGroup": "political_group",
-        Title: "title",
-        "Meeting With": "meeting_with",
-        "Meeting Related to Procedure": "meeting_related_to_procedure",
-      };
+
       this.filteredOptions = {};
       Object.keys(this.apiResponse).forEach((key) => {
-        if (fieldMap[key]) {
+        if (store.fieldMap[key]) {
           this.filteredOptions[key] = []; // Ou une valeur par défaut appropriée
         }
       });
