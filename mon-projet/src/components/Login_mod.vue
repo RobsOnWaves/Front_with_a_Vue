@@ -6,6 +6,7 @@
 
     <form @submit.prevent="login_mod" class="login-form">
       <!-- Champs de formulaire avec des styles Bootstrap et personnalisés -->
+      <ErrorMessage v-if="store.errorMessage.visible"/>
       <div class="form-group">
         <input type="text" class="form-control" v-model="username" placeholder="Nom d'utilisateur" required>
       </div>
@@ -15,14 +16,24 @@
       <div class="mt-auto w-100 text-center">
         <button type="submit" class="btn btn-primary">Connexion</button>
       </div>
+      
     </form>
   </div>
 </template>
 
 <script>
-import axios from 'axios'; // Importation d'axios
+import axiosInstance from '../axiosConfig'; // Importation d'axios
+import { store } from '../store';
+import ErrorMessage from './ErrorMessage.vue'
+
 
 export default {
+  setup() {
+    return { store };
+  },
+  components: {
+    ErrorMessage
+  },
   data() {
     return {
       username: '',
@@ -38,7 +49,7 @@ export default {
       formData.append('password', this.password);
       formData.append('client_id', "");
       formData.append('client_secret', "");
-      axios.post(`${this.$apiUrl}/token`, formData)
+      axiosInstance.post(`${this.$apiUrl}/token`, formData)
     .then(response => {
       const token = response.data.access_token;
       const userName = response.data.name;
