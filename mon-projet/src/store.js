@@ -2,7 +2,7 @@
 import { reactive } from 'vue';
 
 export const store = reactive({
-  isLoggedIn: true,
+  isLoggedIn: false,
   errorMessage: {
     visible: false,
     message: ''

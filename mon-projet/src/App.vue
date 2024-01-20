@@ -4,9 +4,9 @@
     <div class="container main-content">
       <Login_mod v-if="!store.isLoggedIn" @login-success="handleLogin" @login-error="handleLoginError" />
       <RoleBasedModule v-if="store.isLoggedIn && showApp == ''" :userRole="userRole" @navigate-to-fileupload="showFileUploadComponent"  @navigate-to-admin="showAdminComponent" @navigate-to-democracy="showDemocracyComponent" />
-      <FileUpload v-if="showApp == 'file-upload'" />
-      <Admin v-if="showApp == 'admin-page'" />
-      <Democracy v-if="showApp == 'democracy-page' "/>
+      <FileUpload v-if="store.isLoggedIn && showApp == 'file-upload'" />
+      <Admin v-if="store.isLoggedIn && showApp == 'admin-page'" />
+      <Democracy v-if="store.isLoggedIn && showApp == 'democracy-page' "/>
     </div>
   </div>
 </template>
