@@ -20,9 +20,13 @@
 </template>
 
 <script>
-import axios from 'axios'; // Importation d'axios
+import axiosInstance from '../axiosConfig'; // Importation d'axios
+import { store } from '../store';
 
 export default {
+  setup() {
+    return { store };
+  },
   data() {
     return {
       username: '',
@@ -38,7 +42,7 @@ export default {
       formData.append('password', this.password);
       formData.append('client_id', "");
       formData.append('client_secret', "");
-      axios.post(`${this.$apiUrl}/token`, formData)
+      axiosInstance.post(`${this.$apiUrl}/token`, formData)
     .then(response => {
       const token = response.data.access_token;
       const userName = response.data.name;

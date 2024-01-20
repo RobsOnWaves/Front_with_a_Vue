@@ -17,10 +17,26 @@
         <div class="search-container">
           <div v-for="(options, key) in apiResponse" :key="key">
             <label :for="key">{{ key }}</label>
+            <input
+              v-if="
+                [
+                  'Title',
+                  'Meeting With',
+                  'Meeting Related to Procedure',
+                ].includes(key)
+              "
+              type="text"
+              v-model="selectedValues[key]"
+              class="form-control"
+              :id="key"
+            />
+
             <v-select
+              v-else
               :options="filteredOptions[key]"
               :reduce="(option) => option"
               label="name"
+              taggable
               @search="(searchEvent) => filterOptions(key, searchEvent)"
               v-model="selectedValues[key]"
             ></v-select>
@@ -33,13 +49,17 @@
 </template>
 
 <script>
-import axios from "axios";
-import vSelect from 'vue-select';
-import 'vue-select/dist/vue-select.css';
+import axiosInstance from "../axiosConfig";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
+import { store } from "../store";
 
 export default {
+  setup() {
+    return { store };
+  },
   components: {
-    'v-select': vSelect,
+    "v-select": vSelect,
   },
   data() {
     return {
@@ -63,7 +83,7 @@ export default {
 
       try {
         const url = `${this.$apiUrl}/meps_file`;
-        const response = await axios.get(url, {
+        const response = await axiosInstance.get(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -126,12 +146,11 @@ export default {
         "MEP nationalPoliticalGroup": "national_political_group",
         "MEP politicalGroup": "political_group",
         Title: "title",
-        Place: "place",
         "Meeting With": "meeting_with",
+        "Meeting Related to Procedure": "meeting_related_to_procedure",
       };
       const queryParams = new URLSearchParams();
 
-      // Construction des paramètres de requête à partir des valeurs sélectionnées
       for (const [key, value] of Object.entries(this.selectedValues)) {
         const apiField = fieldMap[key];
         if (value && apiField) {
@@ -140,37 +159,27 @@ export default {
       }
 
       try {
-        const response = await fetch(
-          `${this.$apiUrl}/meps_file?` + queryParams.toString(),
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        const response = await axiosInstance.get(`${this.$apiUrl}/meps_file`, {
+          params: queryParams,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob", // Si vous attendez une réponse de type blob
+        });
 
         // Traiter la réponse en tant que Blob si c'est un fichier
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const fileLink = document.createElement("a");
+        fileLink.href = url;
+        fileLink.setAttribute("download", "downloaded_file.xlsx"); // Nom du fichier à télécharger
+        document.body.appendChild(fileLink);
 
-        // Créer un élément de lien pour le téléchargement
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "downloaded_file"; // Nom du fichier à télécharger
-        document.body.appendChild(a);
-        a.click();
+        fileLink.click();
         window.URL.revokeObjectURL(url);
-        a.remove();
+        fileLink.remove();
       } catch (error) {
-        console.error(
-          "There has been a problem with your fetch operation:",
-          error
-        );
+        console.error("Erreur lors de la requête :", error);
+        // Gestion supplémentaire des erreurs si nécessaire
       }
     },
     initializeSelectedValues() {
@@ -179,8 +188,8 @@ export default {
         "MEP nationalPoliticalGroup": "national_political_group",
         "MEP politicalGroup": "political_group",
         Title: "title",
-        Place: "place",
         "Meeting With": "meeting_with",
+        "Meeting Related to Procedure": "meeting_related_to_procedure",
       };
       if (this.apiResponse && typeof this.apiResponse === "object") {
         Object.keys(this.apiResponse).forEach((key) => {
@@ -198,8 +207,8 @@ export default {
         "MEP nationalPoliticalGroup": "national_political_group",
         "MEP politicalGroup": "political_group",
         Title: "title",
-        Place: "place",
         "Meeting With": "meeting_with",
+        "Meeting Related to Procedure": "meeting_related_to_procedure",
       };
       this.filteredOptions = {};
       Object.keys(this.apiResponse).forEach((key) => {
@@ -393,9 +402,13 @@ export default {
   cursor: pointer;
 }
 
-
 .search-container {
-  background-color: rgba(255, 255, 255, 0.9); /* Fond blanc légèrement transparent */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.9
+  ); /* Fond blanc légèrement transparent */
   padding: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre portée légère */
