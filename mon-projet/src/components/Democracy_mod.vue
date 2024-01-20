@@ -11,37 +11,61 @@
           <span class="button-text">Rencontres MEPs/lobbies</span>
         </div>
         <div class="sub-text" @click="getFile">
-          Récupérer le fichier de rencontres MEP avec lobbies
+          Récupérer le fichier de toutes les rencontres enregistrées MEP avec lobbies
         </div>
 
-        <div class="search-container">
-          <div v-for="(options, key) in apiResponse" :key="key">
-            <label :for="key">{{ key }}</label>
-            <input
-              v-if="
-                [
-                  'Title',
-                  'Meeting With',
-                  'Meeting Related to Procedure',
-                ].includes(key)
-              "
-              type="text"
-              v-model="selectedValues[key]"
-              class="form-control"
-              :id="key"
-            />
+        <div class="request-section">
+          <h2 class="filter-title">Filtres de Recherche</h2>
 
-            <v-select
-              v-else
-              :options="filteredOptions[key]"
-              :reduce="(option) => option"
-              label="name"
-              taggable
-              @search="(searchEvent) => filterOptions(key, searchEvent)"
-              v-model="selectedValues[key]"
-            ></v-select>
+          <div class="image-button-container">
+            <div v-for="(options, key) in apiResponse" :key="key">
+              <label :for="key" class="sub-text">{{ key }}</label>
+              <input
+                v-if="
+                  [
+                    'Title',
+                    'Meeting With',
+                    'Meeting Related to Procedure',
+                  ].includes(key)
+                "
+                type="text"
+                v-model="selectedValues[key]"
+                class="form-control"
+                :id="key"
+              />
+
+              <v-select
+                v-else
+                :options="filteredOptions[key]"
+                :reduce="(option) => option"
+                label="name"
+                taggable
+                @search="(searchEvent) => filterOptions(key, searchEvent)"
+                v-model="selectedValues[key]"
+              ></v-select>
+            </div>
+            <div>
+              <label class="sub-text">Début de la plage de recherche</label>
+              <input
+                type="date"
+                v-model="startDate"
+                class="form-control"
+                placeholder="Date de début"
+              />
+            </div>
+            <div>
+              <label class="sub-text">Fin de la plage de recherche</label>
+              <input
+                type="date"
+                v-model="endDate"
+                class="form-control"
+                placeholder="Date de fin"
+              />
+            </div>
+            <button class="btn btn-success" @click="sendRequest">
+              Appliquer les filtres et récupérer le fichier
+            </button>
           </div>
-          <button @click="sendRequest">Send Request</button>
         </div>
       </div>
     </div>
@@ -69,6 +93,8 @@ export default {
       selectedValues: {},
       filteredOptions: {},
       searchQuery: {},
+      startDate: null,
+      endDate: null,
     };
   },
   methods: {
@@ -151,6 +177,17 @@ export default {
         }
       }
 
+      if (this.startDate) {
+        // Convertit la date en format ISO si this.startDate est un objet Date
+        const formattedStartDate = new Date(this.startDate).toISOString();
+        queryParams.append("start_date", formattedStartDate);
+      }
+      if (this.endDate) {
+        // Convertit la date en format ISO si this.endDate est un objet Date
+        const formattedEndDate = new Date(this.endDate).toISOString();
+        queryParams.append("end_date", formattedEndDate);
+      }
+
       try {
         const response = await axiosInstance.get(`${this.$apiUrl}/meps_file`, {
           params: queryParams,
@@ -175,7 +212,6 @@ export default {
         // Gestion supplémentaire des erreurs si nécessaire
       }
       this.isLoading = false; // Début du chargement
-
     },
     initializeSelectedValues() {
       if (this.apiResponse && typeof this.apiResponse === "object") {
@@ -189,7 +225,6 @@ export default {
       }
     },
     initializeFilteredOptions() {
-
       this.filteredOptions = {};
       Object.keys(this.apiResponse).forEach((key) => {
         if (store.fieldMap[key]) {
@@ -211,6 +246,62 @@ export default {
 </script>
 @import 'vue-select/dist/vue-select.css';
 <style scoped>
+
+.filter-title {
+  text-align: center; /* Centrer le titre */
+  color: #fff; /* Couleur du texte du titre */
+  margin-bottom: 15px; /* Espace sous le titre */
+  padding: 10px; /* Espace intérieur pour le titre */
+  background-color: #6c757d; /* Couleur de fond pour le titre */
+  border-radius: 5px; /* Bords arrondis pour le titre */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Ombre pour le titre */
+  text-transform: uppercase; /* Texte en majuscules */
+  font-size: 1.2rem; /* Taille de la police */
+}
+
+
+.request-section {
+  background-color: rgba(114, 114, 114, 0.9); /* Un arrière-plan légèrement différent */
+  border: 1px solid #717171; /* Une bordure subtile */
+  padding: 20px; /* Un peu d'espace à l'intérieur */
+  margin-top: 20px; /* Espace au-dessus de la section */
+  border-radius: 10px; /* Bords arrondis */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet de profondeur */
+}
+
+
+.error-message {
+  color: #dc3545; /* Rouge pour les erreurs */
+  background-color: rgba(220, 53, 69, 0.7);
+  text-shadow: 0 0 3px #000;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.success-message {
+  color: #28a745; /* Vert pour les succès */
+  background-color: rgba(40, 167, 69, 0.7);
+  text-shadow: 0 0 3px #000;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.form-control,
+.v-select {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.form-group,
+.search-container,
+.image-button-container,
+.btn-success,
+.form-control {
+  margin-bottom: 10px; /* Espace uniforme entre les éléments */
+}
+
 .upload-container {
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 10px;
