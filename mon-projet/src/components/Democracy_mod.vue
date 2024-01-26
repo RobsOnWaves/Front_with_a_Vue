@@ -1,6 +1,6 @@
 <template>
   <div class="role-based-module">
-    <div v-if="isLoading" class="loader"></div>
+    <div v-if="isLoadingFile || isLoadingWords"  class="loader"></div>
     <div v-else>
       <div class="image-button-container">
         <div
@@ -63,22 +63,21 @@
                 placeholder="Date de fin"
               />
             </div>
-            <button class="btn btn-success" @click="sendRequest">
-              Appliquer les filtres et récupérer le fichier
+            <button class="btn btn-success" @click="handleButtonClick" >
+              Appliquer les filtrer, récupérer le fichier et mettre à jours les indicateurs
+            </button>
+            <button class="btn btn-success" @click="getStatRequest" >
+              Appliquer les filtres et afficher les indicateurs
             </button>
           </div>
           <div>
             <vue-word-cloud
+              :key="wordCloudKey"
               style="height: 480px; width: 640px"
-              :words="[
-                ['romance', 19],
-                ['horror', 3],
-                ['fantasy', 7],
-                ['adventure', 3],
-              ]"
+              :words="wordCloudData"
               :color="
                 ([, weight]) =>
-                  weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'
+                  weight > maxWeight/2 ? 'DeepPink' : weight > maxWeight/2 ? 'RoyalBlue' : 'Indigo'
               "
               font-family="Roboto"
             />
@@ -104,7 +103,8 @@ export default {
   },
   data() {
     return {
-      isLoading: false, // Ajoutez cette propriété pour gérer l'affichage du spinner
+      isLoadingFile: false,
+      isLoadingWords: false, // Ajoutez cette propriété pour gérer l'affichage du spinner
       mepLobbies: require("../../images/MEP_files.png"),
       apiResponse: null,
       selectedValues: {},
@@ -112,15 +112,19 @@ export default {
       searchQuery: {},
       startDate: null,
       endDate: null,
+      wordCloudData: [],
+      wordCloudKey: 0,
+      maxWeight: 10,
+      minWeight: 4
     };
   },
   methods: {
     async getFile() {
-      this.isLoading = true; // Début du chargement
+      this.isLoadingFile = true; // Début du chargement
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("Aucun jeton d'authentification trouvé");
-        this.isLoading = false; // Arrêt du chargement en cas d'erreur
+        this.isLoadingFile = false; // Arrêt du chargement en cas d'erreur
         return;
       }
 
@@ -146,7 +150,7 @@ export default {
         this.loginError =
           error.response.data.detail || "Une erreur est survenue";
       } finally {
-        this.isLoading = false; // Arrêt du chargement après la requête
+        this.isLoadingFile = false; // Arrêt du chargement après la requête
       }
     },
     filterOptions(key, searchEvent = "") {
@@ -182,10 +186,15 @@ export default {
         );
       }
     },
+    async handleButtonClick() {
+    await this.sendRequest(); // Attendez que la première requête soit terminée
+    await this.getStatRequest(); // Ensuite, appelez la deuxième requête
+  },
+
     async sendRequest() {
       const token = localStorage.getItem("token");
       const queryParams = new URLSearchParams();
-      this.isLoading = true; // Début du chargement
+      this.isLoadingFile = true; // Début du chargement
 
       for (const [key, value] of Object.entries(this.selectedValues)) {
         const apiField = store.fieldMap[key];
@@ -228,8 +237,69 @@ export default {
         console.error("Erreur lors de la requête :", error);
         // Gestion supplémentaire des erreurs si nécessaire
       }
-      this.isLoading = false; // Début du chargement
+      this.isLoadingFile = false; // Début du chargement
     },
+
+    async getStatRequest() {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      this.isLoadingWords = true; // Début du chargement
+
+      for (const [key, value] of Object.entries(this.selectedValues)) {
+        const apiField = store.fieldMap[key];
+        if (value && apiField) {
+          queryParams.append(apiField, value);
+        }
+      }
+
+      if (this.startDate) {
+        // Convertit la date en format ISO si this.startDate est un objet Date
+        const formattedStartDate = new Date(this.startDate).toISOString();
+        queryParams.append("start_date", formattedStartDate);
+      }
+      if (this.endDate) {
+        // Convertit la date en format ISO si this.endDate est un objet Date
+        const formattedEndDate = new Date(this.endDate).toISOString();
+        queryParams.append("end_date", formattedEndDate);
+      }
+
+      try {
+        const response = await axiosInstance.get(`${this.$apiUrl}/meps_stats`, {
+          params: queryParams,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "json", // Si vous attendez une réponse de type blob
+        });
+        console.log(
+          "Transformed titles:",
+          this.transformTitles(response.data.Title)
+        );
+        console.log("raw titles", response.data.Title);
+        this.wordCloudData = this.transformTitles(response.data.Title);
+        this.wordCloudKey = Date.now();
+        //console.log(this.wordCloudData)
+      } catch (error) {
+        console.error("Erreur lors de la requête :", error);
+        // Gestion supplémentaire des erreurs si nécessaire
+      }
+      this.isLoadingWords = false; 
+    },
+    transformTitles(titles) {
+      // Convert the titles object into an array of [word, weight] pairs
+      const wordArray = Object.entries(titles);
+
+      // Sort the array by weight in descending order
+      const sortedWordArray = wordArray.sort((a, b) => b[1] - a[1]);
+      const slice = sortedWordArray.slice(0, 300)
+
+      this.maxWeight = slice[0][1];
+      this.minWeight = slice[slice.length - 1][1];
+
+      // Take the first 100 elements
+      return slice;
+    },
+
     initializeSelectedValues() {
       if (this.apiResponse && typeof this.apiResponse === "object") {
         Object.keys(this.apiResponse).forEach((key) => {
@@ -252,7 +322,6 @@ export default {
   },
   async mounted() {
     await this.fetchApiData();
-
     this.searchQuery = {};
     for (const key in this.apiResponse) {
       this.searchQuery[key] = "";
