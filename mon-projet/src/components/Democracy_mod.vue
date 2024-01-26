@@ -11,7 +11,8 @@
           <span class="button-text">Rencontres MEPs/lobbies</span>
         </div>
         <div class="sub-text" @click="getFile">
-          Récupérer le fichier de toutes les rencontres enregistrées MEP avec lobbies
+          Récupérer le fichier de toutes les rencontres enregistrées MEP avec
+          lobbies
         </div>
 
         <div class="request-section">
@@ -65,6 +66,22 @@
             <button class="btn btn-success" @click="sendRequest">
               Appliquer les filtres et récupérer le fichier
             </button>
+          </div>
+          <div>
+            <vue-word-cloud
+              style="height: 480px; width: 640px"
+              :words="[
+                ['romance', 19],
+                ['horror', 3],
+                ['fantasy', 7],
+                ['adventure', 3],
+              ]"
+              :color="
+                ([, weight]) =>
+                  weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'
+              "
+              font-family="Roboto"
+            />
           </div>
         </div>
       </div>
@@ -246,7 +263,6 @@ export default {
 </script>
 @import 'vue-select/dist/vue-select.css';
 <style scoped>
-
 .filter-title {
   text-align: center; /* Centrer le titre */
   color: #fff; /* Couleur du texte du titre */
@@ -259,16 +275,19 @@ export default {
   font-size: 1.2rem; /* Taille de la police */
 }
 
-
 .request-section {
-  background-color: rgba(114, 114, 114, 0.9); /* Un arrière-plan légèrement différent */
+  background-color: rgba(
+    114,
+    114,
+    114,
+    0.9
+  ); /* Un arrière-plan légèrement différent */
   border: 1px solid #717171; /* Une bordure subtile */
   padding: 20px; /* Un peu d'espace à l'intérieur */
   margin-top: 20px; /* Espace au-dessus de la section */
   border-radius: 10px; /* Bords arrondis */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet de profondeur */
 }
-
 
 .error-message {
   color: #dc3545; /* Rouge pour les erreurs */
