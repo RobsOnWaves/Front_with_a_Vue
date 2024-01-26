@@ -281,6 +281,8 @@ export default {
         //console.log(this.wordCloudData)
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
+        this.wordCloudData = [];
+        this.wordCloudKey = Date.now();
         // Gestion supplémentaire des erreurs si nécessaire
       }
       this.isLoadingWords = false; 
@@ -291,7 +293,7 @@ export default {
 
       // Sort the array by weight in descending order
       const sortedWordArray = wordArray.sort((a, b) => b[1] - a[1]);
-      const slice = sortedWordArray.slice(0, 300)
+      const slice = sortedWordArray.slice(0, 100)
 
       this.maxWeight = slice[0][1];
       this.minWeight = slice[slice.length - 1][1];
