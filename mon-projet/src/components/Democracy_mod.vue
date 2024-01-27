@@ -1,6 +1,6 @@
 <template>
   <div class="role-based-module">
-    <div v-if="isLoadingFile || isLoadingWords"  class="loader"></div>
+    <div v-if="isLoadingFile || isLoadingWords" class="loader"></div>
     <div v-else>
       <div class="image-button-container">
         <div
@@ -63,13 +63,19 @@
                 placeholder="Date de fin"
               />
             </div>
-            <button class="btn btn-success" @click="handleButtonClick" >
-              Appliquer les filtrer, récupérer le fichier et mettre à jours les indicateurs
+            <button class="btn btn-success" @click="handleButtonClick">
+              Appliquer les filtrer, récupérer le fichier et mettre à jours les
+              indicateurs
             </button>
-            <button class="btn btn-success" @click="getStatRequest" >
+            <button class="btn btn-success" @click="getStatRequest">
               Appliquer les filtres et afficher les indicateurs
             </button>
           </div>
+        </div>
+
+        <div class="request-section">
+          <h2 class="filter-title">Nuage de termes dans les titres des rencontres</h2>
+
           <div>
             <vue-word-cloud
               :key="wordCloudKey"
@@ -77,7 +83,31 @@
               :words="wordCloudData"
               :color="
                 ([, weight]) =>
-                  weight > maxWeight/2 ? 'DeepPink' : weight > maxWeight/2 ? 'RoyalBlue' : 'Indigo'
+                  weight > maxWeightTitle / 2
+                    ? 'DeepPink'
+                    : weight > maxWeightTitle / 2
+                    ? 'RoyalBlue'
+                    : 'Indigo'
+              "
+              font-family="Roboto"
+            />
+          </div>
+        </div>
+        <div class="request-section">
+          <h2 class="filter-title">Nuage de termes organismes rencontrés</h2>
+
+          <div>
+            <vue-word-cloud
+              :key="wordCloudKey"
+              style="height: 480px; width: 640px"
+              :words="wordMeetingWith"
+              :color="
+                ([, weight]) =>
+                  weight > maxWeightMeetingWith / 2
+                    ? 'DeepPink'
+                    : weight > maxWeightMeetingWith / 2
+                    ? 'RoyalBlue'
+                    : 'Indigo'
               "
               font-family="Roboto"
             />
@@ -114,8 +144,11 @@ export default {
       endDate: null,
       wordCloudData: [],
       wordCloudKey: 0,
-      maxWeight: 10,
-      minWeight: 4
+      maxWeightTitle: 10,
+      minWeightTitle: 4,
+      maxWeightMeetingWith: 10,
+      minWeightMeetingWith: 4,
+      wordMeetingWith: [],
     };
   },
   methods: {
@@ -187,9 +220,9 @@ export default {
       }
     },
     async handleButtonClick() {
-    await this.sendRequest(); // Attendez que la première requête soit terminée
-    await this.getStatRequest(); // Ensuite, appelez la deuxième requête
-  },
+      await this.sendRequest(); // Attendez que la première requête soit terminée
+      await this.getStatRequest(); // Ensuite, appelez la deuxième requête
+    },
 
     async sendRequest() {
       const token = localStorage.getItem("token");
@@ -275,31 +308,40 @@ export default {
           "Transformed titles:",
           this.transformTitles(response.data.Title)
         );
-        console.log("raw titles", response.data.Title);
-        this.wordCloudData = this.transformTitles(response.data.Title);
+        const titles = this.transformTitles(response.data.Title, 100);
+       
+        const meetings = this.transformTitles(response.data.Meeting_With_no_stopwords, 50);
+
+        this.wordCloudData = titles.slice;
+        this.wordMeetingWith = meetings.slice;
+        this.maxWeightTitle = titles.maxWeight;
+        this.minWeightTitle = titles.minWeight;
+        this.maxWeightMeeting = meetings.maxWeight;
+        this.minWeightMeeting = meetings.minWeight;
+       
         this.wordCloudKey = Date.now();
-        //console.log(this.wordCloudData)
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
         this.wordCloudData = [];
+        this.wordMeetingWith = [];
         this.wordCloudKey = Date.now();
         // Gestion supplémentaire des erreurs si nécessaire
       }
-      this.isLoadingWords = false; 
+      this.isLoadingWords = false;
     },
-    transformTitles(titles) {
+    transformTitles(titles, depth) {
       // Convert the titles object into an array of [word, weight] pairs
       const wordArray = Object.entries(titles);
 
       // Sort the array by weight in descending order
       const sortedWordArray = wordArray.sort((a, b) => b[1] - a[1]);
-      const slice = sortedWordArray.slice(0, 100)
+      const slice = sortedWordArray.slice(0, depth);
 
-      this.maxWeight = slice[0][1];
-      this.minWeight = slice[slice.length - 1][1];
+      const maxWeight = slice[0][1];
+      const minWeight = slice[slice.length - 1][1];
 
       // Take the first 100 elements
-      return slice;
+      return {"slice": slice, "maxWeight": maxWeight, "minWeight": minWeight};
     },
 
     initializeSelectedValues() {
