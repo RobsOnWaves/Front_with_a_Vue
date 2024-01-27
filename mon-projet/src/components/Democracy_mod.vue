@@ -14,65 +14,70 @@
           Récupérer le fichier de toutes les rencontres enregistrées MEP avec
           lobbies
         </div>
+        <div class="sub-section">
+          <div class="request-section">
+            <h2 class="filter-title">Filtres de Recherche</h2>
 
-        <div class="request-section">
-          <h2 class="filter-title">Filtres de Recherche</h2>
+            <div class="image-button-container">
+              <div v-for="(options, key) in apiResponse" :key="key">
+                <label :for="key" class="sub-text">{{ key }}</label>
+                <input
+                  v-if="
+                    [
+                      'Title',
+                      'Meeting With',
+                      'Meeting Related to Procedure',
+                    ].includes(key)
+                  "
+                  type="text"
+                  v-model="selectedValues[key]"
+                  class="form-control"
+                  :id="key"
+                />
 
-          <div class="image-button-container">
-            <div v-for="(options, key) in apiResponse" :key="key">
-              <label :for="key" class="sub-text">{{ key }}</label>
-              <input
-                v-if="
-                  [
-                    'Title',
-                    'Meeting With',
-                    'Meeting Related to Procedure',
-                  ].includes(key)
-                "
-                type="text"
-                v-model="selectedValues[key]"
-                class="form-control"
-                :id="key"
-              />
-
-              <v-select
-                v-else
-                :options="filteredOptions[key]"
-                :reduce="(option) => option"
-                label="name"
-                taggable
-                @search="(searchEvent) => filterOptions(key, searchEvent)"
-                v-model="selectedValues[key]"
-              ></v-select>
+                <v-select
+                  v-else
+                  :options="filteredOptions[key]"
+                  :reduce="(option) => option"
+                  label="name"
+                  taggable
+                  @search="(searchEvent) => filterOptions(key, searchEvent)"
+                  v-model="selectedValues[key]"
+                ></v-select>
+              </div>
+              <div>
+                <label class="sub-text">Début de la plage de recherche</label>
+                <input
+                  type="date"
+                  v-model="startDate"
+                  class="form-control"
+                  placeholder="Date de début"
+                />
+              </div>
+              <div>
+                <label class="sub-text">Fin de la plage de recherche</label>
+                <input
+                  type="date"
+                  v-model="endDate"
+                  class="form-control"
+                  placeholder="Date de fin"
+                />
+              </div>
+              <button class="btn btn-success" @click="handleButtonClick">
+                Appliquer les filtres, récupérer les fichiers et mettre à jour
+                les indicateurs
+              </button>
+              <button class="btn btn-success" @click="handleButtonClickStats">
+                Appliquer les filtres, récupérer le fichier de stats et mettre à jour
+                les indicateurs
+              </button>
+              <button class="btn btn-success" @click="getStatRequest">
+                Appliquer les filtres et afficher les indicateurs
+              </button>
             </div>
-            <div>
-              <label class="sub-text">Début de la plage de recherche</label>
-              <input
-                type="date"
-                v-model="startDate"
-                class="form-control"
-                placeholder="Date de début"
-              />
-            </div>
-            <div>
-              <label class="sub-text">Fin de la plage de recherche</label>
-              <input
-                type="date"
-                v-model="endDate"
-                class="form-control"
-                placeholder="Date de fin"
-              />
-            </div>
-            <button class="btn btn-success" @click="handleButtonClick">
-              Appliquer les filtrer, récupérer le fichier et mettre à jours les
-              indicateurs
-            </button>
-            <button class="btn btn-success" @click="getStatRequest">
-              Appliquer les filtres et afficher les indicateurs
-            </button>
           </div>
         </div>
-        <div v-if="displayStats">
+        <div v-if="displayStats" class="sub-section">
           <div class="request-section">
             <h2 class="filter-title">
               Nuage de termes dans les titres des rencontres
@@ -289,7 +294,12 @@ export default {
     },
     async handleButtonClick() {
       await this.sendRequest(); // Attendez que la première requête soit terminée
-      await this.getStatRequest(); // Ensuite, appelez la deuxième requête
+      await this.getStatRequest();
+      await this.getStatRequestFile(); // Ensuite, appelez la deuxième requête
+    },
+    async handleButtonClickStats() {
+      await this.getStatRequest();
+      await this.getStatRequestFile(); // Ensuite, appelez la deuxième requête
     },
 
     async sendRequest() {
@@ -328,7 +338,7 @@ export default {
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const fileLink = document.createElement("a");
         fileLink.href = url;
-        fileLink.setAttribute("download", "downloaded_file.xlsx"); // Nom du fichier à télécharger
+        fileLink.setAttribute("download", "downloaded_file_raw_data.xlsx"); // Nom du fichier à télécharger
         document.body.appendChild(fileLink);
 
         fileLink.click();
@@ -441,6 +451,53 @@ export default {
       }
       this.isLoadingWords = false;
     },
+    async getStatRequestFile() {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      this.isLoadingFile = true; // Début du chargement
+      this.displayStats = true;
+      for (const [key, value] of Object.entries(this.selectedValues)) {
+        const apiField = store.fieldMap[key];
+        if (value && apiField) {
+          queryParams.append(apiField, value);
+        }
+      }
+
+      if (this.startDate) {
+        // Convertit la date en format ISO si this.startDate est un objet Date
+        const formattedStartDate = new Date(this.startDate).toISOString();
+        queryParams.append("start_date", formattedStartDate);
+      }
+      if (this.endDate) {
+        // Convertit la date en format ISO si this.endDate est un objet Date
+        const formattedEndDate = new Date(this.endDate).toISOString();
+        queryParams.append("end_date", formattedEndDate);
+      }
+
+      try {
+        const response = await axiosInstance.get(`${this.$apiUrl}/meps_stats_file`, {
+          params: queryParams,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob", // Si vous attendez une réponse de type blob
+        });
+                // Traiter la réponse en tant que Blob si c'est un fichier
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const fileLink = document.createElement("a");
+        fileLink.href = url;
+        fileLink.setAttribute("download", "downloaded_file_stats.xlsx"); // Nom du fichier à télécharger
+        document.body.appendChild(fileLink);
+
+        fileLink.click();
+        window.URL.revokeObjectURL(url);
+        fileLink.remove();
+      } catch (error) {
+        console.error("Erreur lors de la requête :", error);
+         // Gestion supplémentaire des erreurs si nécessaire
+      }
+      this.isLoadingFile = false;
+    },
     transformTitles(titles, depth) {
       // Convert the titles object into an array of [word, weight] pairs
       const wordArray = Object.entries(titles);
@@ -532,6 +589,20 @@ export default {
     114,
     114,
     114,
+    0.9
+  ); /* Un arrière-plan légèrement différent */
+  border: 1px solid #717171; /* Une bordure subtile */
+  padding: 20px; /* Un peu d'espace à l'intérieur */
+  margin-top: 20px; /* Espace au-dessus de la section */
+  border-radius: 10px; /* Bords arrondis */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet de profondeur */
+}
+
+.sub-section {
+  background-color: rgba(
+    99,
+    99,
+    99,
     0.9
   ); /* Un arrière-plan légèrement différent */
   border: 1px solid #717171; /* Une bordure subtile */
