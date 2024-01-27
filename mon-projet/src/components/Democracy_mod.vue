@@ -74,7 +74,9 @@
         </div>
 
         <div class="request-section">
-          <h2 class="filter-title">Nuage de termes dans les titres des rencontres</h2>
+          <h2 class="filter-title">
+            Nuage de termes dans les titres des rencontres
+          </h2>
 
           <div>
             <vue-word-cloud
@@ -83,9 +85,9 @@
               :words="wordCloudData"
               :color="
                 ([, weight]) =>
-                  weight > maxWeightTitle / 2
+                  weight > medianWeightTitle
                     ? 'DeepPink'
-                    : weight > maxWeightTitle / 2
+                    : weight < medianWeightTitle
                     ? 'RoyalBlue'
                     : 'Indigo'
               "
@@ -98,14 +100,14 @@
 
           <div>
             <vue-word-cloud
-              :key="wordCloudKey"
+              :key="wordCloudKeyMeeting"
               style="height: 480px; width: 640px"
               :words="wordMeetingWith"
               :color="
                 ([, weight]) =>
-                  weight > maxWeightMeetingWith / 2
+                  weight > medianWeightMeeting
                     ? 'DeepPink'
-                    : weight > maxWeightMeetingWith / 2
+                    : weight < medianWeightMeeting
                     ? 'RoyalBlue'
                     : 'Indigo'
               "
@@ -144,11 +146,15 @@ export default {
       endDate: null,
       wordCloudData: [],
       wordCloudKey: 0,
+      wordCloudKeyMeeting: 0,
       maxWeightTitle: 10,
       minWeightTitle: 4,
+      medianWeightTitle: 0,
       maxWeightMeetingWith: 10,
       minWeightMeetingWith: 4,
+      medianWeightMeeting: 0,
       wordMeetingWith: [],
+      maxWordLengthForCloud: 50
     };
   },
   methods: {
@@ -309,22 +315,29 @@ export default {
           this.transformTitles(response.data.Title)
         );
         const titles = this.transformTitles(response.data.Title, 100);
-       
-        const meetings = this.transformTitles(response.data.Meeting_With_no_stopwords, 50);
+
+        const meetings = this.transformTitles(
+          response.data.Meeting_With_no_stopwords,
+          40
+        );
 
         this.wordCloudData = titles.slice;
         this.wordMeetingWith = meetings.slice;
-        this.maxWeightTitle = titles.maxWeight;
+        this.medianWeightTitle = titles.medianWeight;
         this.minWeightTitle = titles.minWeight;
-        this.maxWeightMeeting = meetings.maxWeight;
-        this.minWeightMeeting = meetings.minWeight;
-       
+        this.medianWeightMeeting = meetings.medianWeight;
+        console.log({ maxWeightMeetingWith: this.maxWeightMeetingWith / 2 });
+        
         this.wordCloudKey = Date.now();
+        this.wordCloudKeyMeeting = this.wordCloudKey + 1;
+
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
         this.wordCloudData = [];
         this.wordMeetingWith = [];
         this.wordCloudKey = Date.now();
+        this.wordCloudKeyMeeting = this.wordCloudKey + 1;
+
         // Gestion supplémentaire des erreurs si nécessaire
       }
       this.isLoadingWords = false;
@@ -335,13 +348,40 @@ export default {
 
       // Sort the array by weight in descending order
       const sortedWordArray = wordArray.sort((a, b) => b[1] - a[1]);
-      const slice = sortedWordArray.slice(0, depth);
+      let slice = sortedWordArray.slice(0, depth);
 
       const maxWeight = slice[0][1];
       const minWeight = slice[slice.length - 1][1];
 
-      // Take the first 100 elements
-      return {"slice": slice, "maxWeight": maxWeight, "minWeight": minWeight};
+      // Truncate titles longer than maxWordLengthForCloud characters and add '...'
+      slice = slice.map(([title, weight]) => {
+        if (title.length > this.maxWordLengthForCloud) {
+          title = title.substring(0, this.maxWordLengthForCloud) + "...";
+        }
+        return [title, weight];
+      });
+
+      // Extracting the weights from the slice
+      const weights = slice.map((item) => item[1]);
+
+      // Calculating the median
+      const medianWeight = this.median(weights);
+
+      console.log(slice);
+      console.log(maxWeight, minWeight, medianWeight);
+
+      return { slice: slice, medianWeight: medianWeight, minWeight: minWeight };
+    },
+    median(values) {
+      if (values.length === 0) throw new Error("No data");
+
+      values.sort((a, b) => a - b);
+
+      const half = Math.floor(values.length / 2);
+
+      if (values.length % 2) return values[half];
+
+      return (values[half - 1] + values[half]) / 2.0;
     },
 
     initializeSelectedValues() {
