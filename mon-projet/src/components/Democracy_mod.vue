@@ -72,46 +72,95 @@
             </button>
           </div>
         </div>
+        <div v-if="displayStats">
+          <div class="request-section">
+            <h2 class="filter-title">
+              Nuage de termes dans les titres des rencontres
+            </h2>
 
-        <div class="request-section">
-          <h2 class="filter-title">
-            Nuage de termes dans les titres des rencontres
-          </h2>
+            <div>
+              <vue-word-cloud
+                :key="wordCloudKey"
+                style="height: 480px; width: 640px"
+                :words="wordCloudData"
+                :color="
+                  ([, weight]) =>
+                    weight > medianWeightTitle
+                      ? 'DeepPink'
+                      : weight < medianWeightTitle
+                      ? 'RoyalBlue'
+                      : 'Indigo'
+                "
+                font-family="Roboto"
+              />
+            </div>
+          </div>
+          <div class="request-section">
+            <h2 class="filter-title">Nuage de termes organismes rencontrés</h2>
 
-          <div>
-            <vue-word-cloud
-              :key="wordCloudKey"
-              style="height: 480px; width: 640px"
-              :words="wordCloudData"
-              :color="
-                ([, weight]) =>
-                  weight > medianWeightTitle
-                    ? 'DeepPink'
-                    : weight < medianWeightTitle
-                    ? 'RoyalBlue'
-                    : 'Indigo'
-              "
-              font-family="Roboto"
+            <div>
+              <vue-word-cloud
+                :key="wordCloudKeyMeeting"
+                style="height: 480px; width: 640px"
+                :words="wordMeetingWith"
+                :color="
+                  ([, weight]) =>
+                    weight > medianWeightMeeting
+                      ? 'DeepPink'
+                      : weight < medianWeightMeeting
+                      ? 'RoyalBlue'
+                      : 'Indigo'
+                "
+                font-family="Roboto"
+              />
+            </div>
+          </div>
+
+          <div class="request-section">
+            <h2 class="filter-title">
+              Nombre de rencontres groupées par groupes parlementaires européens
+            </h2>
+
+            <EasyDataTable
+              :key="keyPolGroups"
+              :headers="headers"
+              :items="politicalGroups"
+              row-id-key="name"
             />
           </div>
-        </div>
-        <div class="request-section">
-          <h2 class="filter-title">Nuage de termes organismes rencontrés</h2>
 
-          <div>
-            <vue-word-cloud
-              :key="wordCloudKeyMeeting"
-              style="height: 480px; width: 640px"
-              :words="wordMeetingWith"
-              :color="
-                ([, weight]) =>
-                  weight > medianWeightMeeting
-                    ? 'DeepPink'
-                    : weight < medianWeightMeeting
-                    ? 'RoyalBlue'
-                    : 'Indigo'
-              "
-              font-family="Roboto"
+          <div class="request-section">
+            <h2 class="filter-title">
+              Nombre de rencontres groupées par groupes parlementaires nationaux
+            </h2>
+
+            <EasyDataTable
+              :key="keyPolNationalGroups"
+              :headers="headers"
+              :items="politicalNationalGroups"
+              row-id-key="name"
+            />
+          </div>
+
+          <div class="request-section">
+            <h2 class="filter-title">Cumul des titres de rencontres</h2>
+
+            <EasyDataTable
+              :key="keyTitlesRaw"
+              :headers="headers"
+              :items="titlesRaw"
+              row-id-key="name"
+            />
+          </div>
+
+          <div class="request-section">
+            <h2 class="filter-title">Cumul des entités rencontrées</h2>
+
+            <EasyDataTable
+              :key="keyMeetingsRaw"
+              :headers="headers"
+              :items="meetingsRaw"
+              row-id-key="name"
             />
           </div>
         </div>
@@ -147,6 +196,8 @@ export default {
       wordCloudData: [],
       wordCloudKey: 0,
       wordCloudKeyMeeting: 0,
+      keyPolGroups: 0,
+      keyPolNationalGroups: 0,
       maxWeightTitle: 10,
       minWeightTitle: 4,
       medianWeightTitle: 0,
@@ -154,7 +205,18 @@ export default {
       minWeightMeetingWith: 4,
       medianWeightMeeting: 0,
       wordMeetingWith: [],
-      maxWordLengthForCloud: 50
+      maxWordLengthForCloud: 50,
+      politicalGroups: [],
+      politicalNationalGroups: [],
+      headers: [
+        { text: "Nom du Groupe", value: "name", autoSize: true },
+        { text: "Nombre", value: "count", autoSize: true },
+      ],
+      titlesRaw: [],
+      keyTitlesRaw: 0,
+      meetingsRaw: [],
+      keyMeetingsRaw: 0,
+      displayStats: false,
     };
   },
   methods: {
@@ -283,7 +345,7 @@ export default {
       const token = localStorage.getItem("token");
       const queryParams = new URLSearchParams();
       this.isLoadingWords = true; // Début du chargement
-
+      this.displayStats = true;
       for (const [key, value] of Object.entries(this.selectedValues)) {
         const apiField = store.fieldMap[key];
         if (value && apiField) {
@@ -327,16 +389,53 @@ export default {
         this.minWeightTitle = titles.minWeight;
         this.medianWeightMeeting = meetings.medianWeight;
         console.log({ maxWeightMeetingWith: this.maxWeightMeetingWith / 2 });
-        
+
+        this.politicalGroups = Object.entries(
+          response.data["MEP politicalGroup"]
+        ).map(([name, count]) => ({
+          name: name,
+          count: count,
+        }));
+
+        this.politicalNationalGroups = Object.entries(
+          response.data["MEP nationalPoliticalGroup"]
+        ).map(([name, count]) => ({
+          name: name,
+          count: count,
+        }));
+
+        this.titlesRaw = Object.entries(
+          response.data["Title_no_stopwords"]
+        ).map(([name, count]) => ({
+          name: name,
+          count: count,
+        }));
+
+        this.meetingsRaw = Object.entries(
+          response.data["Meeting_With_no_stopwords"]
+        ).map(([name, count]) => ({
+          name: name,
+          count: count,
+        }));
+
+        console.log({ pols: this.politicalGroups });
+        console.log({ pols2: this.politicalGroups2 });
         this.wordCloudKey = Date.now();
         this.wordCloudKeyMeeting = this.wordCloudKey + 1;
-
+        this.keyPolGroups = this.wordCloudKey + 2;
+        this.keyPolNationalGroups = this.wordCloudKey + 3;
+        this.keyTitlesRaw = this.wordCloudKey + 4;
+        this.keyMeetingsRaw = this.wordCloudKey + 5;
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
         this.wordCloudData = [];
         this.wordMeetingWith = [];
         this.wordCloudKey = Date.now();
         this.wordCloudKeyMeeting = this.wordCloudKey + 1;
+        this.keyPolGroups = this.wordCloudKey + 2;
+        this.keyPolNationalGroups = this.wordCloudKey + 3;
+        this.keyTitlesRaw = this.wordCloudKey + 4;
+        this.keyMeetingsRaw = this.wordCloudKey + 5;
 
         // Gestion supplémentaire des erreurs si nécessaire
       }
@@ -353,7 +452,7 @@ export default {
       const maxWeight = slice[0][1];
       const minWeight = slice[slice.length - 1][1];
 
-      // Truncate titles longer than maxWordLengthForCloud characters and add '...'
+      // Truncate titles longer than maxSliceRows characters and add '...'
       slice = slice.map(([title, weight]) => {
         if (title.length > this.maxWordLengthForCloud) {
           title = title.substring(0, this.maxWordLengthForCloud) + "...";
