@@ -20,7 +20,7 @@
 
             <div class="image-button-container">
               <div v-for="(options, key) in apiResponse" :key="key">
-                <label :for="key" class="sub-text">{{ key }}</label>
+                <label :for="key" class="filter-sub-title">{{ key }}</label>
                 <input
                   v-if="
                     [
@@ -46,7 +46,9 @@
                 ></v-select>
               </div>
               <div>
-                <label class="sub-text">Début de la plage de recherche</label>
+                <label class="filter-sub-title"
+                  >Début de la plage de recherche</label
+                >
                 <input
                   type="date"
                   v-model="startDate"
@@ -55,7 +57,9 @@
                 />
               </div>
               <div>
-                <label class="sub-text">Fin de la plage de recherche</label>
+                <label class="filter-sub-title"
+                  >Fin de la plage de recherche</label
+                >
                 <input
                   type="date"
                   v-model="endDate"
@@ -63,17 +67,35 @@
                   placeholder="Date de fin"
                 />
               </div>
-              <button class="btn btn-success" @click="handleButtonClick">
-                Appliquer les filtres, récupérer les fichiers et mettre à jour
-                les indicateurs
-              </button>
-              <button class="btn btn-success" @click="handleButtonClickStats">
-                Appliquer les filtres, récupérer le fichier de stats et mettre à jour
-                les indicateurs
-              </button>
-              <button class="btn btn-success" @click="getStatRequest">
-                Appliquer les filtres et afficher les indicateurs
-              </button>
+              <div class="buttons-container">
+                <div class="button-group-container">
+                  <div class="button-with-text">
+                    <div
+                      class="image-button"
+                      @click="handleButtonClick"
+                      :style="{ backgroundImage: 'url(' + mepLobbies + ')' }"
+                    >
+                      <span class="button-text">Rencontres MEPs/lobbies</span>
+                    </div>
+                    <div class="sub-text" @click="handleButtonClick">
+                      Appliquer les filtres, récupérer les fichiers et mettre à
+                      jour les indicateurs
+                    </div>
+                  </div>
+                  <div class="button-with-text">
+                    <div
+                      class="image-button"
+                      @click="getStatRequest"
+                      :style="{ backgroundImage: 'url(' + mepLobbies + ')' }"
+                    >
+                      <span class="button-text">Rencontres MEPs/lobbies</span>
+                    </div>
+                    <div class="sub-text" @click="getStatRequest">
+                      Appliquer les filtres et afficher les indicateurs
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -83,7 +105,7 @@
               Nuage de termes dans les titres des rencontres
             </h2>
 
-            <div>
+            <div class="word-cloud-container">
               <vue-word-cloud
                 :key="wordCloudKey"
                 style="height: 480px; width: 640px"
@@ -103,7 +125,7 @@
           <div class="request-section">
             <h2 class="filter-title">Nuage de termes organismes rencontrés</h2>
 
-            <div>
+            <div class="word-cloud-container">
               <vue-word-cloud
                 :key="wordCloudKeyMeeting"
                 style="height: 480px; width: 640px"
@@ -210,7 +232,7 @@ export default {
       minWeightMeetingWith: 4,
       medianWeightMeeting: 0,
       wordMeetingWith: [],
-      maxWordLengthForCloud: 50,
+      maxWordLengthForCloud: 30,
       politicalGroups: [],
       politicalNationalGroups: [],
       headers: [
@@ -475,14 +497,17 @@ export default {
       }
 
       try {
-        const response = await axiosInstance.get(`${this.$apiUrl}/meps_stats_file`, {
-          params: queryParams,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          responseType: "blob", // Si vous attendez une réponse de type blob
-        });
-                // Traiter la réponse en tant que Blob si c'est un fichier
+        const response = await axiosInstance.get(
+          `${this.$apiUrl}/meps_stats_file`,
+          {
+            params: queryParams,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            responseType: "blob", // Si vous attendez une réponse de type blob
+          }
+        );
+        // Traiter la réponse en tant que Blob si c'est un fichier
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const fileLink = document.createElement("a");
         fileLink.href = url;
@@ -494,7 +519,7 @@ export default {
         fileLink.remove();
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
-         // Gestion supplémentaire des erreurs si nécessaire
+        // Gestion supplémentaire des erreurs si nécessaire
       }
       this.isLoadingFile = false;
     },
@@ -572,6 +597,36 @@ export default {
 </script>
 @import 'vue-select/dist/vue-select.css';
 <style scoped>
+
+.buttons-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Ajoutez un peu d'espace entre les éléments */
+}
+
+.button-group-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px; /* Cela ajoutera de l'espace entre les groupes de boutons */
+}
+
+.button-with-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center; 
+}
+
+.word-cloud-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Assurez-vous que le conteneur a une hauteur pour le centrage vertical */
+}
+
 .filter-title {
   text-align: center; /* Centrer le titre */
   color: #fff; /* Couleur du texte du titre */
@@ -735,6 +790,10 @@ export default {
   border-radius: 4px;
   overflow: hidden;
   background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .image-button .button-text {
@@ -806,6 +865,13 @@ export default {
 .image-container:hover .overlay-text {
   opacity: 1; /* Le texte devient visible au survol */
 }
+.filter-sub-title {
+  width: 100%; /* Assurez-vous que la largeur du sous-texte correspond à celle du bouton */
+  text-align: center; /* Centrer le texte */
+  color: white; /* Couleur du sous-texte */
+  margin-top: 5px;
+  cursor: pointer;
+}
 
 .sub-text {
   width: 100%; /* Assurez-vous que la largeur du sous-texte correspond à celle du bouton */
@@ -813,6 +879,13 @@ export default {
   color: white; /* Couleur du sous-texte */
   margin-top: 5px;
   cursor: pointer;
+  font-size: 1.5rem; /* Augmentez la taille de la police selon vos besoins */
+  line-height: 1.4; /* Ajustez l'espacement des lignes pour une meilleure lisibilité */
+  max-width: 100%; /* Assurez-vous que le sous-texte peut s'étendre jusqu'à 100% de la largeur de son conteneur */
+  word-wrap: break-word;
+  line-height: 1.4;
+  margin: 0 auto; /* Centrer le sous-texte */
+  max-width: 90%; 
 }
 
 .search-container {
