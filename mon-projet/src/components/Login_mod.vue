@@ -7,10 +7,10 @@
     <form @submit.prevent="login_mod" class="login-form">
       <!-- Champs de formulaire avec des styles Bootstrap et personnalisés -->
       <ErrorMessage v-if="store.errorMessage.visible"/>
-      <div class="form-group">
+      <div class="form-group-login">
         <input type="text" class="form-control" v-model="username" placeholder="Nom d'utilisateur" required>
       </div>
-      <div class="form-group">
+      <div class="form-group-login">
         <input type="password" class="form-control" v-model="password" placeholder="Mot de passe" required>
       </div>
       <div class="mt-auto w-100 text-center">
@@ -86,7 +86,7 @@ export default {
 
 }
 
-.login-form .form-group {
+.login-form .form-group-login {
   margin-bottom: 15px;
   height: 100%; /* Assurez-vous que le formulaire remplit le conteneur */
 }
