@@ -151,6 +151,41 @@
               />
             </div>
           </div>
+          <div class="request-section">
+            <h2 class="filter-title">Titre des rencontres</h2>
+          <ChartVue 
+          :key="keyRawDataChart"
+          :rawData="rawDataChart"
+          :selectedCategory='"Title_no_stopwords"'
+          />
+          </div>  
+          <div class="request-section">
+            <h2 class="filter-title">Entitées rencontrées</h2>
+          <ChartVue 
+          :key="keyRawDataChart"
+          :rawData="rawDataChart"
+          :selectedCategory='"Meeting_With_unfiltered"'
+          />
+          </div>  
+
+          <div class="request-section">
+            <h2 class="filter-title">Groupe parlementaire européen</h2>
+          <ChartVue 
+          :key="keyRawDataChart"
+          :rawData="rawDataChart"
+          :selectedCategory='"MEP politicalGroup"'
+          />
+          </div>  
+
+          <div class="request-section">
+            <h2 class="filter-title">Groupe national</h2>
+          <ChartVue 
+          :key="keyRawDataChart"
+          :rawData="rawDataChart"
+          :selectedCategory='"MEP nationalPoliticalGroup"'
+          />
+          </div>  
+
 
           <div class="request-section">
             <h2 class="filter-title">
@@ -199,13 +234,6 @@
               row-id-key="name"
             />
           </div>
-          <div class="request-section">
-            <h2 class="filter-title">Graphe</h2>
-          <ChartVue 
-          :key="keyRawDataChart"
-          :rawData="rawDataChart"
-          />
-          </div>  
         </div>
       </div>
     </div>
