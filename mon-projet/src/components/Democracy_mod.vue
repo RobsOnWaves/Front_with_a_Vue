@@ -199,6 +199,13 @@
               row-id-key="name"
             />
           </div>
+          <div class="request-section">
+            <h2 class="filter-title">Graphe</h2>
+          <ChartVue 
+          :key="keyRawDataChart"
+          :rawData="rawDataChart"
+          />
+          </div>  
         </div>
       </div>
     </div>
@@ -210,6 +217,8 @@ import axiosInstance from "../axiosConfig";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import { store } from "../store";
+import ChartVue from './ChartVue.vue'
+
 
 export default {
   setup() {
@@ -217,6 +226,7 @@ export default {
   },
   components: {
     "v-select": vSelect,
+    ChartVue
   },
   data() {
     return {
@@ -255,6 +265,8 @@ export default {
       meetingsRaw: [],
       keyMeetingsRaw: 0,
       displayStats: false,
+      rawDataChart: {},
+      keyRawDataChart: 0
     };
   },
   methods: {
@@ -461,6 +473,8 @@ export default {
           count: count,
         }));
 
+        this.rawDataChart = response.data["meps_stats_grouped_by_month"];
+
         console.log({ pols: this.politicalGroups });
         console.log({ pols2: this.politicalGroups2 });
         this.wordCloudKey = Date.now();
@@ -469,6 +483,7 @@ export default {
         this.keyPolNationalGroups = this.wordCloudKey + 3;
         this.keyTitlesRaw = this.wordCloudKey + 4;
         this.keyMeetingsRaw = this.wordCloudKey + 5;
+        this.keyRawDataChart = this.wordCloudKey + 6;
       } catch (error) {
         console.error("Erreur lors de la requête :", error);
         this.wordCloudData = [];
@@ -479,6 +494,7 @@ export default {
         this.keyPolNationalGroups = this.wordCloudKey + 3;
         this.keyTitlesRaw = this.wordCloudKey + 4;
         this.keyMeetingsRaw = this.wordCloudKey + 5;
+        this.keyRawDataChart = this.wordCloudKey + 6;
 
         // Gestion supplémentaire des erreurs si nécessaire
       }
