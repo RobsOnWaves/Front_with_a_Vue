@@ -175,7 +175,7 @@
           :rawData="rawDataChart"
           :selectedCategory='"MEP politicalGroup"'
           />
-          </div>  
+          </div>  European Environmental Bureau
 
           <div class="request-section">
             <h2 class="filter-title">Groupe national</h2>
@@ -183,6 +183,15 @@
           :key="keyRawDataChart"
           :rawData="rawDataChart"
           :selectedCategory='"MEP nationalPoliticalGroup"'
+          />
+          </div>  
+
+          <div class="request-section">
+            <h2 class="filter-title">Par MEP</h2>
+          <ChartVue 
+          :key="keyRawDataChart"
+          :rawData="rawDataChart"
+          :selectedCategory='"MEP Name"'
           />
           </div>  
 
@@ -231,6 +240,17 @@
               :key="keyMeetingsRaw"
               :headers="headers"
               :items="meetingsRaw"
+              row-id-key="name"
+            />
+          </div>
+
+          <div class="request-section">
+            <h2 class="filter-title">Cumul par MEP</h2>
+
+            <EasyDataTable
+              :key="keyMeetingsRaw"
+              :headers="headers"
+              :items="mepsRaw"
               row-id-key="name"
             />
           </div>
@@ -291,6 +311,7 @@ export default {
       titlesRaw: [],
       keyTitlesRaw: 0,
       meetingsRaw: [],
+      mepsRaw:[],
       keyMeetingsRaw: 0,
       displayStats: false,
       rawDataChart: {},
@@ -496,6 +517,13 @@ export default {
 
         this.meetingsRaw = Object.entries(
           response.data["Meeting_With_unfiltered"]
+        ).map(([name, count]) => ({
+          name: name,
+          count: count,
+        }));
+
+        this.mepsRaw = Object.entries(
+          response.data["MEP Name"]
         ).map(([name, count]) => ({
           name: name,
           count: count,
